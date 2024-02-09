@@ -1,0 +1,103 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Gstr3b extends Model
+{
+    use HasFactory;
+    protected $table = 'gstr_3b';
+
+	protected $primaryKey = 'id';
+    
+    protected $fillable = [
+        'month_year',
+        'sales_rate_InMaha',
+        'sales_basic_InMaha',
+        'sales_CGST_InMaha',
+        'sales_SGST_InMaha',
+        'sales_IGST_InMaha',
+        'sales_rate_OutMaha_18',
+        'sales_IGST_OutMaha_18',
+        'sales_basic_OutMaha_18',
+        'sales_rate_OutMaha_12',
+        'sales_IGST_OutMaha_12',
+        'sales_basic_OutMaha_12',
+        'sales_basic_OutMaha_5',
+        'sales_rate_OutMaha_5',
+        'sales_IGST_OutMaha_5',
+        'sales_CGST_RCM',
+		'sales_SGST_RCM',
+        'sales_IGST_RCM',
+        'sales_basic_Amendment',
+        'sales_CGST_Amendment',
+        'sales_SGST_Amendment',
+        'sales_IGST_Amendment',
+        'sales_Basic_Total',
+        'sales_CGST_Total',
+        'sales_SGST_Total',
+        'sales_IGST_Total',
+        'pur_inMhRt_18',
+        'pur_inMhBs_18',
+        'pur_inMhC_18	',
+        'pur_inMhS_18',
+        'pur_inMhRt_12',
+        'pur_inMhBs_12',
+        'pur_inMhC_12',
+        'pur_inMhS_12',
+        'pur_inMhRt_5',
+        'pur_inMhBs_2',
+        'pur_inMhC_5',
+		'pur_inMhS_5',
+        'purc_CGST_InMhPurc',
+        'purc_SGST_InMhPurc',
+        'purc_CGST_OutMhPurc',
+        'purc_SGST_OutMhPurc',
+        'purc_RCM_CGST',
+        'purc_RCM_SGST',
+        'purc_RCM_IGST',
+        'pur_OutMhRt_18',
+        'pur_OutMhBs_18',
+        'pur_OutMhI_18',
+        'pur_OutMhRt_12',
+        'pur_OutMhBs_12',
+        'pur_OutMhI_12',
+        'pur_OutMhRt_5',
+        'pur_OutMhBs_5',
+        'pur_OutMhI_5',
+        'purc_RCM',
+        'purc_basic_Amendment',
+        'purc_CGST_Amendment',
+        'purc_SGST_Amendment',
+        'purc_IGST_Amendment',
+        'pur_basic_total',
+        'pur_CGST_total',
+        'pur_SGST_total',
+        'pur_IGST_total',
+        'ITC_Basic',
+        'ITC_CGST',
+		'ITC_SGST',
+        'ITC_IGST',
+        'IGST_to_IGST',
+        'IGST_to_CGST',
+        'CGST_Balance_Liability',
+        'SGST_Balance_Liability',
+        'IGST_to_SGST',
+        'CGST_to_CGST',
+        'CGST_to_IGST	',
+        'SGST_to_SGST',
+        'SGST_to_IGST',
+        'CGST_Late_Fees',
+        'SGST_Late_Fees',
+        'CGST_Final_Liability',
+        'SGST_Final_Liability',
+        'Carried_Forward_CGST',
+        'Carried_Forward_SGST',
+        'Carried_Forward_IGST	',
+        'created_at',
+		'updated_at'
+        
+      ];
+}
