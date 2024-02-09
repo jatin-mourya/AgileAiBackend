@@ -233,10 +233,9 @@ Route::apiResource('invoicedetids', InvoicedetidsController::class);
 // by jatin
 // for invoice types table
 Route::apiResource('invoice_types', invoiceTypesController::class);
-Route::apiResource('invoice_multi', invoiceMultiController::class); 
-Route::get('/invoice-multi/{id}', [App\Http\Controllers\API\InvoiceMultiController::class, 'invoiceMulti'])->name('invoiceMulti');
-
-
+Route::apiResource('invoice_multi', invoiceMultiController::class);
+Route::get('/invoice-multi/{id}', [App\Http\Controllers\API\InvoiceMultiController::class, 'getInvoice'])->name('getInvoice');
+Route::post('/update-invoice-multi', [App\Http\Controllers\API\InvoiceMultiController::class, 'updateInvoice'])->name('updateInvoice');
 Route::get('/invoice_exists/{num}', [App\Http\Controllers\API\InvoiceMultiController::class, 'invoiceNumExists'])->name('invoiceNumExists');
 // by jatin
 // by jatin

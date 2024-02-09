@@ -12,6 +12,34 @@ use App\Models\Disbursement;
 
 class InvoiceMultiController extends Controller
 {
+    // by jatin
+    // by jatin
+    public function getInvoice($invID)
+    {
+        $InvoiceMulti = DB::table('invoice_multi')
+            ->select('*')
+            // ->join('invoicedetids','invoicedetids.invoice_multi_id','=','invoice_multi.invoice_multi_id')
+            ->where('invoice_multi.invoice_multi_id', $invID)
+            ->get();
+        $InvoiceDetids = DB::table('invoicedetids')
+            ->select('*')
+            ->join('salesdetails', 'salesdetails.client_id', '=', 'invoicedetids.client_id')
+            ->join('projects', 'projects.project_id', '=', 'salesdetails.project_id')
+            ->where('invoicedetids.invoice_multi_id', $invID)
+            ->get();
+
+        return response()->json(["invMultiData" => $InvoiceMulti, "invDetidsData" => $InvoiceDetids]);
+    }
+    public function updateInvoice(Request $request)
+    {
+        // $invoice = InvoiceMulti::find($request->invoice_multi_id);
+        // $invoice = $request;
+        // $invoice->save();
+
+        return response()->json($request);
+    }
+    // by jatin
+    // by jatin
 
     public function index()
     {
