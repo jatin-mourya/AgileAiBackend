@@ -10,6 +10,27 @@ use Illuminate\Support\Facades\DB;
 class InvoicedetidsController extends Controller
 {
 
+    public function updateInvoiceDetids(Request $request)
+    {
+        $client_id = $request->input('client_id');
+        $company_id = $request->input('company_id');
+        $invoice_num = $request->input('invoice_num');
+
+        $invoicedetids = Invoicedetids::where('client_id', $client_id)
+            ->where('company_id', $company_id)
+            ->where('invoice_num', $invoice_num)
+            ->first();
+
+        if ($invoicedetids) {
+            $invoicedetids->update([
+                'case_payout_percentage' => $request->input('case_payout_percentage'),
+                'taxable_amt' => $request->input('taxable_amt'),
+            ]);
+        }
+        $updatedRow = Invoicedetids::find($invoicedetids->invoicedetids_id);
+        return response()->json($updatedRow);
+    }
+
     public function index()
     {
         $invoicedetids = Invoicedetids::all();

@@ -225,7 +225,6 @@ Route::apiResource('inv_status', Inv_statusController::class);
 Route::apiResource('receiptdetails', ReceiptDetailsController::class);
 Route::apiResource('credit_note', CreditNoteController::class);
 Route::apiResource('gst_fillingdetails', GstFillingDetailsController::class);
-Route::apiResource('invoicedetids', InvoicedetidsController::class);
 // by jatin
 // by jatin
 // by jatin
@@ -234,9 +233,15 @@ Route::apiResource('invoicedetids', InvoicedetidsController::class);
 // for invoice types table
 Route::apiResource('invoice_types', invoiceTypesController::class);
 Route::apiResource('invoice_multi', invoiceMultiController::class);
-Route::get('/invoice-multi/{id}', [App\Http\Controllers\API\InvoiceMultiController::class, 'getInvoice'])->name('getInvoice');
-Route::post('/update-invoice-multi', [App\Http\Controllers\API\InvoiceMultiController::class, 'updateInvoice'])->name('updateInvoice');
-Route::get('/invoice_exists/{num}', [App\Http\Controllers\API\InvoiceMultiController::class, 'invoiceNumExists'])->name('invoiceNumExists');
+Route::apiResource('invoicedetids', InvoicedetidsController::class);
+// get invoice MULTI
+Route::get('/invoice-multi/{id}', [InvoiceMultiController::class, 'getInvoice'])->name('getInvoice');
+// update invoice MULTI
+Route::post('/update-invoice-multi', [InvoiceMultiController::class, 'updateInvoice'])->name('updateInvoice');
+// update invoice detids
+Route::post('/update-invoice-detids', [InvoicedetidsController::class, 'updateInvoiceDetids'])->name('updateInvoiceDetids');
+// checks if invoice num exists or not
+Route::get('/invoice_exists/{num}', [InvoiceMultiController::class, 'invoiceNumExists'])->name('invoiceNumExists');
 // by jatin
 // by jatin
 // by jatin

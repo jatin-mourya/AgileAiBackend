@@ -22,9 +22,11 @@ class InvoiceMultiController extends Controller
             ->where('invoice_multi.invoice_multi_id', $invID)
             ->get();
         $InvoiceDetids = DB::table('invoicedetids')
-            ->select('*')
+            ->select('invoicedetids.*', 'projects.project_name', 'salesdetails.flat_no', 'salesdetails.wing', 'salesdetails.building_name', 'tbl_hldisbursement.disb_amt', 'tbl_hldisbursement.disb_date')
             ->join('salesdetails', 'salesdetails.client_id', '=', 'invoicedetids.client_id')
             ->join('projects', 'projects.project_id', '=', 'salesdetails.project_id')
+            ->join('tbl_hldisbursement', 'tbl_hldisbursement.client_id', '=', 'invoicedetids.client_id')
+
             ->where('invoicedetids.invoice_multi_id', $invID)
             ->get();
 
@@ -32,11 +34,22 @@ class InvoiceMultiController extends Controller
     }
     public function updateInvoice(Request $request)
     {
-        // $invoice = InvoiceMulti::find($request->invoice_multi_id);
-        // $invoice = $request;
-        // $invoice->save();
+        $invoice = InvoiceMulti::find($request->input('invoice_multi_id'));
+        $invoice->invoice_date = $request->input('invoice_date');
+        $invoice->cgst_amt = $request->input('cgst_amt');
+        $invoice->sgst_amt = $request->input('sgst_amt');
+        $invoice->igst_amt = $request->input('igst_amt');
+        $invoice->total_gst_amt = $request->input('total_gst_amt');
+        $invoice->total_invoice_amt = $request->input('total_invoice_amt');
+        $invoice->tds_rate = $request->input('tds_rate');
+        $invoice->receivable_tds_amt = $request->input('receivable_tds_amt');
+        $invoice->receivable_amt = $request->input('receivable_amt');
+        $invoice->received_amt = $request->input('received_amt');
+        $invoice->due_amt = $request->input('due_amt');
+        $invoice->inv_submitted_date = $request->input('inv_submitted_date');
+        $invoice->save();
 
-        return response()->json($request);
+        return response()->json($invoice);
     }
     // by jatin
     // by jatin
