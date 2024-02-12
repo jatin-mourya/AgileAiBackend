@@ -22,11 +22,11 @@ class InvoiceMultiController extends Controller
             ->where('invoice_multi.invoice_multi_id', $invID)
             ->get();
         $InvoiceDetids = DB::table('invoicedetids')
+            // ->select('invoicedetids.*')
             ->select('invoicedetids.*', 'projects.project_name', 'salesdetails.flat_no', 'salesdetails.wing', 'salesdetails.building_name', 'tbl_hldisbursement.disb_amt', 'tbl_hldisbursement.disb_date')
             ->join('salesdetails', 'salesdetails.client_id', '=', 'invoicedetids.client_id')
             ->join('projects', 'projects.project_id', '=', 'salesdetails.project_id')
-            ->join('tbl_hldisbursement', 'tbl_hldisbursement.client_id', '=', 'invoicedetids.client_id')
-
+            // ->join('tbl_hldisbursement', 'tbl_hldisbursement.client_id', '=', 'invoicedetids.client_id')
             ->where('invoicedetids.invoice_multi_id', $invID)
             ->get();
 

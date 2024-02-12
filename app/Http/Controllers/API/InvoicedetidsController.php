@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 class InvoicedetidsController extends Controller
 {
 
+    // by jatin
+    // by jatin
     public function updateInvoiceDetids(Request $request)
     {
         $client_id = $request->input('client_id');
