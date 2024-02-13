@@ -234,8 +234,10 @@ Route::apiResource('gst_fillingdetails', GstFillingDetailsController::class);
 Route::apiResource('invoice_types', invoiceTypesController::class);
 Route::apiResource('invoice_multi', invoiceMultiController::class);
 Route::apiResource('invoicedetids', InvoicedetidsController::class);
+Route::post('/check-max-payout', [InvoiceMultiController::class, 'checkMaxPayout'])->name('checkMaxPayout');
+Route::get('/inv-type-id/{id}', [InvoiceMultiController::class, 'getInvTypeId'])->name('getInvTypeId');
 // get invoice MULTI
-Route::get('/invoice-multi/{id}', [InvoiceMultiController::class, 'getInvoice'])->name('getInvoice');
+Route::get('/invoice-multi/{id}/{invTypeId}', [InvoiceMultiController::class, 'getInvoice'])->name('getInvoice');
 // update invoice MULTI
 Route::post('/update-invoice-multi', [InvoiceMultiController::class, 'updateInvoice'])->name('updateInvoice');
 // update invoice detids

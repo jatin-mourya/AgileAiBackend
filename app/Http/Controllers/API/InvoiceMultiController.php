@@ -14,22 +14,67 @@ class InvoiceMultiController extends Controller
 {
     // by jatin
     // by jatin
-    public function getInvoice($invID)
+    // get inv type id
+    public function checkMaxPayout(Request $request)
     {
+
+        $client = $request->input('client_id');
+        $taxable_amt = $request->input('taxable_amt');
+        $invMultiId = $request->input('invoice_multi_id');
+
+        $InvoiceDetids = DB::table('invoicedetids')
+            ->select('salesdetails.net_payout')
+            ->join('salesdetails', 'salesdetails.client_id', '=', 'invoicedetids.client_id')
+            ->where('invoicedetids.client_id',  $client)
+            ->where('invoicedetids.invoice_multi_id',  $invMultiId)
+            ->get();
+
+
+        // if ($InvoiceDetids->first()->net_payout < $taxable_amt) {
+        if ($InvoiceDetids->first()->net_payout < $taxable_amt) {
+            return response()->json(["isGreater" => true, "net_payout" => $InvoiceDetids->first()->net_payout]);
+        } else {
+            return response()->json(["isGreater" => false, "net_payout" => $InvoiceDetids->first()->net_payout]);
+        }
+    }
+    // get inv type id
+    public function getInvTypeId($invID)
+    {
+        $InvoiceMulti = DB::table('invoice_multi')
+            ->select('invoice_multi.invoice_type_id')
+            ->where('invoice_multi.invoice_multi_id', $invID)
+            ->get();
+        return response()->json($InvoiceMulti);
+    }
+    // get invoice multi & invoice_detids
+    public function getInvoice($invID, $invTypeId)
+    {
+        // get INVOICE MULTI
         $InvoiceMulti = DB::table('invoice_multi')
             ->select('*')
             // ->join('invoicedetids','invoicedetids.invoice_multi_id','=','invoice_multi.invoice_multi_id')
             ->where('invoice_multi.invoice_multi_id', $invID)
             ->get();
-        $InvoiceDetids = DB::table('invoicedetids')
-            // ->select('invoicedetids.*')
-            ->select('invoicedetids.*', 'projects.project_name', 'salesdetails.flat_no', 'salesdetails.wing', 'salesdetails.building_name', 'tbl_hldisbursement.disb_amt', 'tbl_hldisbursement.disb_date')
-            ->join('salesdetails', 'salesdetails.client_id', '=', 'invoicedetids.client_id')
-            ->join('projects', 'projects.project_id', '=', 'salesdetails.project_id')
-            // ->join('tbl_hldisbursement', 'tbl_hldisbursement.client_id', '=', 'invoicedetids.client_id')
-            ->where('invoicedetids.invoice_multi_id', $invID)
-            ->get();
 
+        // get INVOICE_DETIDS
+        if ($invTypeId == 1) {
+            $InvoiceDetids = DB::table('invoicedetids')
+                // ->select('invoicedetids.*')
+                ->select('invoicedetids.*', 'projects.project_name', 'salesdetails.flat_no', 'salesdetails.wing', 'salesdetails.building_name')
+                ->join('salesdetails', 'salesdetails.client_id', '=', 'invoicedetids.client_id')
+                ->join('projects', 'projects.project_id', '=', 'salesdetails.project_id')
+                ->where('invoicedetids.invoice_multi_id', $invID)
+                ->get();
+        } else if ($invTypeId == 2) {
+            $InvoiceDetids = DB::table('invoicedetids')
+                // ->select('invoicedetids.*')
+                ->select('invoicedetids.*', 'tbl_hldisbursement.disb_amt', 'tbl_hldisbursement.disb_date')
+                ->join('tbl_hldisbursement', 'tbl_hldisbursement.client_id', '=', 'invoicedetids.client_id')
+                ->where('invoicedetids.invoice_multi_id', $invID)
+                ->get();
+        } else {
+            $InvoiceDetids = [];
+        }
         return response()->json(["invMultiData" => $InvoiceMulti, "invDetidsData" => $InvoiceDetids]);
     }
     public function updateInvoice(Request $request)
