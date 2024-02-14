@@ -244,6 +244,8 @@ Route::post('/update-invoice-multi', [InvoiceMultiController::class, 'updateInvo
 Route::post('/update-invoice-detids', [InvoicedetidsController::class, 'updateInvoiceDetids'])->name('updateInvoiceDetids');
 // checks if invoice num exists or not
 Route::get('/invoice_exists/{num}', [InvoiceMultiController::class, 'invoiceNumExists'])->name('invoiceNumExists');
+Route::get('/get-companies-by-inv-type/{invType}', [DebtorcompanydetController::class, 'getCompanyByInvType'])->name('getCompanyByInvType');
+
 // by jatin
 // by jatin
 // by jatin

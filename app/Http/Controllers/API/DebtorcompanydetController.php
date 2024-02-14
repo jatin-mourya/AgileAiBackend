@@ -10,6 +10,14 @@ use App\Models\Debtorcompanydet;
 
 class DebtorcompanydetController extends Controller
 {
+    public function getCompanyByInvType($invType)
+    {
+        $debtorcompanydet = DB::table('debtor_company_det')
+            ->where('invoice_type_id', $invType)
+            ->orderBy('updated_at', 'DESC')
+            ->get();
+        return response()->json($debtorcompanydet);
+    }
     public function index()
     {
         $debtorcompanydet = DB::table('debtor_company_det')
