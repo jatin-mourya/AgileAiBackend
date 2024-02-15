@@ -245,6 +245,12 @@ Route::post('/update-invoice-detids', [InvoicedetidsController::class, 'updateIn
 // checks if invoice num exists or not
 Route::get('/invoice_exists/{num}', [InvoiceMultiController::class, 'invoiceNumExists'])->name('invoiceNumExists');
 Route::get('/get-companies-by-inv-type/{invType}', [DebtorcompanydetController::class, 'getCompanyByInvType'])->name('getCompanyByInvType');
+// get Realestate clients 
+Route::get('/get-realestate-clients/{id}', [InvoiceMultiController::class, 'getRealestateClients'])->name('getRealestateClients');
+// get homeloans clients 
+Route::get('/get-homeloans-clients/{id}', [InvoiceMultiController::class, 'getHomeloansClients'])->name('getHomeloansClients');
+// get disbursements
+Route::get('/get-disbursement/{id}', [InvoiceMultiController::class, 'getDisbursements'])->name('getDisbursements');
 
 // by jatin
 // by jatin
