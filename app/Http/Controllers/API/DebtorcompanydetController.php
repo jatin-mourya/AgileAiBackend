@@ -1,8 +1,11 @@
 <?php
 
 namespace App\Http\Controllers\API;
+
 //use DB   
-use Illuminate\Support\Facades\DB;;
+use Illuminate\Support\Facades\DB;
+
+;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -16,14 +19,18 @@ class DebtorcompanydetController extends Controller
     {
         if ($invType == 1) {
 
-            $debtorcompanydet = DB::table('debtor_company_det')
-                ->where('invoice_type_id', $invType)
+            $companies = DB::table('debtor_company_det as c')
+                ->select('c.debtor_company_det_id as id', 'c.cname as name', 'c.gst_no')
+                ->where('c.gst_no', '!=', '')
                 ->orderBy('updated_at', 'DESC')
                 ->get();
-            return response()->json($debtorcompanydet);
+            return response()->json($companies);
         } else if ($invType == 2) {
-            $debtorcompanydet = DB::table('bank_details')->get();
-            return response()->json($debtorcompanydet);
+            $banks = DB::table('bank_details as c')
+                ->select('c.bank_id as id', 'c.bank_name as name', 'c.gst_no', 'c.payout_on')
+                ->where('c.gst_no', '!=', '')
+                ->get();
+            return response()->json($banks);
         }
     }
     // by jatin 
