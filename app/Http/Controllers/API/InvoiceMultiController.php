@@ -70,19 +70,20 @@ class InvoiceMultiController extends Controller
         $taxable_amt = $request->input('taxable_amt');
         $invMultiId = $request->input('invoice_multi_id');
 
-        $InvoiceDetids = DB::table('invoicedetids')
+        $InvoiceDetids = DB::table('salesdetails')
             ->select('salesdetails.net_payout')
-            ->join('salesdetails', 'salesdetails.client_id', '=', 'invoicedetids.client_id')
-            ->where('invoicedetids.client_id', $client)
-            ->where('invoicedetids.invoice_multi_id', $invMultiId)
+            ->where('salesdetails.client_id', $client)
             ->get();
 
-
         // if ($InvoiceDetids->first()->net_payout < $taxable_amt) {
-        if ($InvoiceDetids->first()->net_payout < $taxable_amt) {
-            return response()->json(["isGreater" => true, "net_payout" => $InvoiceDetids->first()->net_payout]);
+        if (count($InvoiceDetids) > 0) {
+            if ($InvoiceDetids[0]->net_payout < $taxable_amt) {
+                return response()->json(["isGreater" => true, "net_payout" => $InvoiceDetids->first()->net_payout]);
+            } else {
+                return response()->json(["isGreater" => false, "net_payout" => $InvoiceDetids->first()->net_payout]);
+            }
         } else {
-            return response()->json(["isGreater" => false, "net_payout" => $InvoiceDetids->first()->net_payout]);
+            return response()->json(["message" => "not found"]);
         }
     }
     public function getRealestateClients($id)
@@ -144,6 +145,45 @@ class InvoiceMultiController extends Controller
                 ->join('tbl_hldisbursement', 'tbl_hldisbursement.client_id', '=', 'invoicedetids.client_id')
                 ->where('invoicedetids.invoice_multi_id', $invID)
                 ->get();
+
+            // $disbursementType = DB::table('tbl_hlsanction')
+            //     ->join('bank_details', 'bank_details.bank_id', '=', 'tbl_hlsanction.bank_name')
+            //     ->join('tbl_hldisbursement', 'tbl_hldisbursement.sanction_id', '=', 'tbl_hlsanction.sanction_id')
+            //     ->select('bank_details.payout_on')
+            //     ->where('tbl_hldisbursement.disb_id', $disb_id)
+            //     ->get();
+            // // return response()->json($disbursementType);
+            // if (count($disbursementType) > 0) {
+
+            //     if ($disbursementType[0]->payout_on == 'sanction') {
+            //         $disbursement = DB::table('tbl_hlsanction')
+
+            //             ->join('bank_details', 'bank_details.bank_id', '=', 'tbl_hlsanction.bank_name')
+            //             ->join('tbl_hldisbursement', 'tbl_hldisbursement.sanction_id', '=', 'tbl_hlsanction.sanction_id')
+            //             ->join('tbl_hlclients', 'tbl_hlclients.client_id', '=', 'tbl_hlsanction.client_id')
+
+            //             ->select('tbl_hldisbursement.client_id', 'tbl_hldisbursement.disb_id', 'tbl_hlsanction.sanction_id', 'bank_details.payout_on', 'bank_details.bank_id', 'bank_details.bank_name', 'tbl_hlsanction.sanction_loan_amt as disb_amt', 'tbl_hlsanction.sanction_date as disb_date', DB::raw("CONCAT(tbl_hlclients.fname,'_',tbl_hlclients.lname,'-',tbl_hldisbursement.File_no) AS name"))
+            //             ->where('tbl_hldisbursement.disb_id', $disb_id)
+            //             ->get();
+            //         return response()->json($disbursement);
+            //     } else if ($disbursementType[0]->payout_on == 'net_disbursement') {
+            //         $disbursement = DB::table('tbl_hlsanction')
+
+            //             ->join('bank_details', 'bank_details.bank_id', '=', 'tbl_hlsanction.bank_name')
+            //             ->join('tbl_hldisbursement', 'tbl_hldisbursement.sanction_id', '=', 'tbl_hlsanction.sanction_id')
+            //             ->join('tbl_hlclients', 'tbl_hlclients.client_id', '=', 'tbl_hlsanction.client_id')
+
+            //             ->select('tbl_hldisbursement.client_id', 'tbl_hldisbursement.disb_id', 'tbl_hlsanction.sanction_id', 'bank_details.payout_on', 'bank_details.bank_id', 'bank_details.bank_name', 'tbl_hldisbursement.disb_amt as disb_amt', 'tbl_hldisbursement.disb_date as disb_date', DB::raw("CONCAT(tbl_hlclients.fname,'_',tbl_hlclients.lname,'-',tbl_hldisbursement.File_no) AS name"))
+            //             ->where('tbl_hldisbursement.disb_id', $disb_id)
+            //             ->get();
+            //         return response()->json($disbursement);
+            //     }
+
+            // } else {
+            //     return response()->json(['message' => 'not found']);
+
+            // }
+
         } else {
             $InvoiceDetids = [];
         }
