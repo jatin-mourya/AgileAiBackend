@@ -62,13 +62,13 @@ class InvoiceMultiController extends Controller
         //     ->get();
         // return response()->json($disburse);
     }
-    // get inv type id
+
+    // checks max payout value for single sale in salesdetails table
     public function checkMaxPayout(Request $request)
     {
 
         $client = $request->input('client_id');
         $taxable_amt = $request->input('taxable_amt');
-        $invMultiId = $request->input('invoice_multi_id');
 
         $InvoiceDetids = DB::table('salesdetails')
             ->select('salesdetails.net_payout')
@@ -86,6 +86,7 @@ class InvoiceMultiController extends Controller
             return response()->json(["message" => "not found"]);
         }
     }
+    // get all realestate clients from salesdetails table
     public function getRealestateClients($id)
     {
         $data1 = DB::table('salesdetails')
@@ -97,6 +98,7 @@ class InvoiceMultiController extends Controller
             ->get();
         return response()->json($data1);
     }
+    // get all homeloans clients from disbursements table
     public function getHomeloansClients($id)
     {   // first check payout_on if sanction or net_disbursement
         $data = DB::table('tbl_hlsanction')
