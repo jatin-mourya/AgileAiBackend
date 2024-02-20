@@ -11,8 +11,8 @@ class InvoiceMulti extends Model
 
     protected $table = 'invoice_multi';
 
-	protected $primaryKey = 'invoice_multi_id';
-    
+    protected $primaryKey = 'invoice_multi_id';
+
     protected $fillable = [
         //'slug',
         'client_id',
@@ -38,6 +38,6 @@ class InvoiceMulti extends Model
         'due_amt',
         'credit_note_amt',
         'invoice_type_id'
-		
-      ];
+
+    ];
 }

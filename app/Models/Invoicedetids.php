@@ -11,11 +11,11 @@ class Invoicedetids extends Model
 
     protected $table = 'invoicedetids';
 
-	protected $primaryKey = 'invoicedetids_id';
-    
+    protected $primaryKey = 'invoicedetids_id';
+
     protected $fillable = [
         //'slug',
-  'invoice_multi_id',
+        'invoice_multi_id',
         'sales_id',
         'company_id',
         'gst_no',
@@ -39,6 +39,7 @@ class Invoicedetids extends Model
         'due_amt',
         'credit_note_amt',
         'invoice_type_id',
-        'discription'
-      ];
+        'discription',
+        'disb_id',
+    ];
 }

@@ -234,21 +234,31 @@ Route::apiResource('gst_fillingdetails', GstFillingDetailsController::class);
 Route::apiResource('invoice_types', invoiceTypesController::class);
 Route::apiResource('invoice_multi', invoiceMultiController::class);
 Route::apiResource('invoicedetids', InvoicedetidsController::class);
+
+// check maximum payout for invoiceType==realestate 
 Route::post('/check-max-payout', [InvoiceMultiController::class, 'checkMaxPayout'])->name('checkMaxPayout');
+
+// get invoice's invoice_type_id
 Route::get('/inv-type-id/{id}', [InvoiceMultiController::class, 'getInvTypeId'])->name('getInvTypeId');
+
 // get invoice MULTI
 Route::get('/invoice-multi/{id}/{invTypeId}', [InvoiceMultiController::class, 'getInvoice'])->name('getInvoice');
 // update invoice MULTI
 Route::post('/update-invoice-multi', [InvoiceMultiController::class, 'updateInvoice'])->name('updateInvoice');
 // update invoice detids
 Route::post('/update-invoice-detids', [InvoicedetidsController::class, 'updateInvoiceDetids'])->name('updateInvoiceDetids');
+
 // checks if invoice num exists or not
 Route::get('/invoice_exists/{num}', [InvoiceMultiController::class, 'invoiceNumExists'])->name('invoiceNumExists');
+
+// get companies according to invoice_type_id
 Route::get('/get-companies-by-inv-type/{invType}', [DebtorcompanydetController::class, 'getCompanyByInvType'])->name('getCompanyByInvType');
+
 // get Realestate clients 
 Route::get('/get-realestate-clients/{id}', [InvoiceMultiController::class, 'getRealestateClients'])->name('getRealestateClients');
 // get homeloans clients 
 Route::get('/get-homeloans-clients/{id}', [InvoiceMultiController::class, 'getHomeloansClients'])->name('getHomeloansClients');
+
 // get disbursements
 Route::get('/get-disbursement/{id}', [InvoiceMultiController::class, 'getDisbursements'])->name('getDisbursements');
 

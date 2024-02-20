@@ -17,12 +17,13 @@ class DebtorcompanydetController extends Controller
     // by jatin 
     public function getCompanyByInvType($invType)
     {
+        // if bank has no gst number, then dont send bank
         if ($invType == 1) {
-
             $companies = DB::table('debtor_company_det as c')
                 ->select('c.debtor_company_det_id as id', 'c.cname as name', 'c.gst_no')
+                ->where('c.invoice_type_id', 1)
                 ->where('c.gst_no', '!=', '')
-                ->orderBy('updated_at', 'DESC')
+                // ->orderBy('updated_at', 'DESC')
                 ->get();
             return response()->json($companies);
         } else if ($invType == 2) {
@@ -31,6 +32,8 @@ class DebtorcompanydetController extends Controller
                 ->where('c.gst_no', '!=', '')
                 ->get();
             return response()->json($banks);
+        } else {
+            return response()->json(["message" => "no companies found"]);
         }
     }
     // by jatin 

@@ -12,6 +12,7 @@ class InvoicedetidsController extends Controller
 
     // by jatin
     // by jatin
+    // update invoice_detids table
     public function updateInvoiceDetids(Request $request)
     {
         $client_id = $request->input('client_id');
@@ -47,33 +48,20 @@ class InvoicedetidsController extends Controller
     public function create(Request $request)
     {
         $newInvoicedetids = new Invoicedetids([
-
-            'invoice_multi_id' => $request->get('invoice_multi_id'),
-            'sales_id' => $request->get('sales_id'),
-            'gst_no' => $request->get('gst_no'),
-            'invoice_num' => $request->get('invoice_num'),
-            'company_id' => $request->get('company_id'),
-            'client_id' => $request->get('client_id'),
-            'payout_value' => $request->get('payout_value'),
             'case_payout_percentage' => $request->get('case_payout_percentage'),
-            //  'payout_percentage' => $request->get('payout_percentage'),
+            'client_id' => $request->get('client_id'),
+            'company_id' => $request->get('company_id'),
             'consideration_value' => $request->get('consideration_value'),
-            'taxable_amt' => $request->get('taxable_amt'),
-            'cgst_amt' => $request->get('cgst_amt'),
-            'sgst_amt' => $request->get('sgst_amt'),
-            'igst_amt' => $request->get('igst_amt'),
-            'total_gst_amt' => $request->get('total_gst_amt'),
-            'total_invoice_amt' => $request->get('total_invoice_amt'),
-            'tds_rate' => $request->get('tds_rate'),
-            'receivable_tds_amt' => $request->get('receivable_tds_amt'),
-            'receivable_amt' => $request->get('receivable_amt'),
-            'received_amt' => $request->get('received_amt'),
-            'suspense_amt' => $request->get('suspense_amt'),
-            'due_amt' => $request->get('due_amt'),
-            'credit_note_amt' => $request->get('credit_note_amt'),
+            'disb_id' => $request->get('disb_id'),
+            'gst_no' => $request->get('gst_no'),
+            'invoice_multi_id' => $request->get('invoice_multi_id'),
+            'invoice_num' => $request->get('invoice_num'),
             'invoice_type_id' => $request->get('invoice_type_id'),
-            'discription' => $request->get('discription')
+            'payout_value' => $request->get('payout_value'),
+            'taxable_amt' => $request->get('taxable_amt'),
+            'tds_rate' => $request->get('tds_rate'),
         ]);
+        return response()->json($newInvoicedetids);
     }
 
     /**
@@ -109,7 +97,8 @@ class InvoicedetidsController extends Controller
             'received_amt' => '',
             'suspense_amt' => '',
             'due_amt' => '',
-            'credit_note_amt' => ''
+            'credit_note_amt' => '',
+            'disb_id' => ''
         ]);
 
         $newInvoicedetids = new Invoicedetids([
@@ -138,7 +127,9 @@ class InvoicedetidsController extends Controller
             'due_amt' => $request->get('due_amt'),
             'credit_note_amt' => $request->get('credit_note_amt'),
             'invoice_type_id' => $request->get('invoice_type_id'),
-            'discription' => $request->get('discription')
+            'discription' => $request->get('discription'),
+            'disb_id' => $request->get('disb_id'),
+
         ]);
 
         $newInvoicedetids->save();
@@ -159,16 +150,16 @@ class InvoicedetidsController extends Controller
         return response()->json($invoicedetids);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($invoicedetids_id)
-    {
-        //
-    }
+    // /**
+    //  * Show the form for editing the specified resource.
+    //  *
+    //  * @param  int  $id
+    //  * @return \Illuminate\Http\Response
+    //  */
+    // public function edit($invoicedetids_id)
+    // {
+    //     //
+    // }
 
     /**
      * Update the specified resource in storage.
