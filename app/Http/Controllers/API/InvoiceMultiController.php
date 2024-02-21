@@ -10,12 +10,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Disbursement;
 
+// import for date 
+use Carbon\Carbon;
+
 class InvoiceMultiController extends Controller
 {
     // by jatin
     // by jatin
-
-
     // get all realestate clients from salesdetails table
     public function getRealestateClients($id)
     {
@@ -51,25 +52,51 @@ class InvoiceMultiController extends Controller
             ->get();
         // return response()->json($disbursementType);
         if (count($disbursementType) > 0) {
-
             if ($disbursementType[0]->payout_on == 'sanction') {
                 $disbursement = DB::table('tbl_hlsanction')
                     ->join('bank_details', 'bank_details.bank_id', '=', 'tbl_hlsanction.bank_name')
                     ->join('tbl_hlclients', 'tbl_hlclients.client_id', '=', 'tbl_hlsanction.client_id')
                     ->join('tbl_hldisbursement', 'tbl_hldisbursement.sanction_id', '=', 'tbl_hlsanction.sanction_id')
                     ->where('tbl_hldisbursement.disb_id', $disb_id)
-                    ->select('tbl_hlclients.client_id', 'tbl_hldisbursement.disb_id', 'tbl_hlsanction.sanction_id', 'bank_details.payout_on', 'bank_details.bank_id', 'bank_details.bank_name', 'tbl_hlsanction.sanction_loan_amt as disb_amt', 'tbl_hlsanction.sanction_date as disb_date', DB::raw("CONCAT(tbl_hlclients.fname,'_',tbl_hlclients.lname,'-',tbl_hldisbursement.File_no) AS name"))
+                    ->select('bank_details.bank_id', 'bank_details.payout_on', 'tbl_hlsanction.sanction_id', 'tbl_hldisbursement.disb_id', 'tbl_hlclients.client_id', 'bank_details.bank_name', 'tbl_hlsanction.sanction_loan_amt as disb_amt', 'tbl_hldisbursement.disb_date', DB::raw("CONCAT(tbl_hlclients.fname,'_',tbl_hlclients.lname,'-',tbl_hldisbursement.File_no) AS name"))
                     ->get();
-                return response()->json($disbursement);
+                $disb_date = new Carbon($disbursement->first()->disb_date);
+                $disb_yy = $disb_date->year;
+                $disb_mm = $disb_date->month;
+                return response()->json(['disb_date' => $disb_date, 'disb_yy' => $disb_yy, 'disb_mm' => $disb_mm]);
+
+
+                // return response()->json($disbursement);
             } else if ($disbursementType[0]->payout_on == 'net_disbursement') {
                 $disbursement = DB::table('tbl_hlsanction')
                     ->join('bank_details', 'bank_details.bank_id', '=', 'tbl_hlsanction.bank_name')
                     ->join('tbl_hlclients', 'tbl_hlclients.client_id', '=', 'tbl_hlsanction.client_id')
                     ->join('tbl_hldisbursement', 'tbl_hldisbursement.sanction_id', '=', 'tbl_hlsanction.sanction_id')
                     ->where('tbl_hldisbursement.disb_id', $disb_id)
-                    ->select('tbl_hlclients.client_id', 'tbl_hldisbursement.disb_id', 'tbl_hlsanction.sanction_id', 'bank_details.payout_on', 'bank_details.bank_id', 'bank_details.bank_name', 'tbl_hldisbursement.disb_amt as disb_amt', 'tbl_hldisbursement.disb_date as disb_date', DB::raw("CONCAT(tbl_hlclients.fname,'_',tbl_hlclients.lname,'-',tbl_hldisbursement.File_no) AS name"))
+                    ->select('bank_details.bank_id', 'bank_details.payout_on', 'tbl_hlsanction.sanction_id', 'tbl_hldisbursement.disb_id', 'tbl_hlclients.client_id', 'bank_details.bank_name', 'tbl_hldisbursement.disb_amt as disb_amt', 'tbl_hldisbursement.disb_date', DB::raw("CONCAT(tbl_hlclients.fname,'_',tbl_hlclients.lname,'-',tbl_hldisbursement.File_no) AS name"))
                     ->get();
-                return response()->json($disbursement);
+                // return response()->json($disbursement);
+                // get first object 
+                $firstDisb = $disbursement->first();
+                // 
+                $disb_date = new Carbon($firstDisb->disb_date);
+                $disb_yy = $disb_date->year;
+                $disb_mm = $disb_date->month;
+                // $disb_yy_mm = $disb_yy . '-' . $disb_mm;
+                $disb_yy_mm = $disb_yy . '-' . str_pad($disb_mm, 2, '0', STR_PAD_LEFT);
+                // return response()->json(['disb_date' => $disb_date, 'disb_yy' => $disb_yy, 'disb_mm' => $disb_mm, "disb_yy_mm" => $disb_yy_mm]);
+
+                // return response()->json([$firstDisb->bank_id, $disb_yy_mm]);
+
+                $totalDisbsOfBankInThatMonth = DB::table('tbl_hldisbursement')
+                    ->where('tbl_hldisbursement.bank_name', $firstDisb->bank_id)
+                    ->where('tbl_hldisbursement.disb_date', 'REGEXP', $disb_yy_mm)
+                    // ->where('tbl_hldisbursement.disb_date', 'REGEXP', $disb_yy)
+                    // ->where('tbl_hldisbursement.disb_date', 'REGEXP', $disb_mm)
+                    ->select('tbl_hldisbursement.*')
+                    ->get();
+
+                return response()->json($totalDisbsOfBankInThatMonth);
             }
 
         } else {
@@ -102,8 +129,6 @@ class InvoiceMultiController extends Controller
         }
     }
 
-    // by jatin
-    // by jatin
     // get inv type id
     public function getInvTypeId($invID)
     {
@@ -227,8 +252,6 @@ class InvoiceMultiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-
-
             // 'client_id' => '',
             'sales_id' => '',
             'company_id' => 'required',

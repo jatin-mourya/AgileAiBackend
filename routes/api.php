@@ -230,10 +230,10 @@ Route::apiResource('gst_fillingdetails', GstFillingDetailsController::class);
 // by jatin
 // by jatin
 // by jatin
-// for invoice types table
-Route::apiResource('invoice_types', invoiceTypesController::class);
 Route::apiResource('invoice_multi', invoiceMultiController::class);
 Route::apiResource('invoicedetids', InvoicedetidsController::class);
+// for invoice types table
+Route::apiResource('invoice_types', invoiceTypesController::class);
 
 // check maximum payout for invoiceType==realestate 
 Route::post('/check-max-payout', [InvoiceMultiController::class, 'checkMaxPayout'])->name('checkMaxPayout');
