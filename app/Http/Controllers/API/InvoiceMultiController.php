@@ -53,32 +53,33 @@ class InvoiceMultiController extends Controller
         // return response()->json($disbursementType);
         if (count($disbursementType) > 0) {
             if ($disbursementType[0]->payout_on == 'sanction') {
+                // get bisbursement
                 $disbursement = DB::table('tbl_hlsanction')
                     ->join('bank_details', 'bank_details.bank_id', '=', 'tbl_hlsanction.bank_name')
                     ->join('tbl_hlclients', 'tbl_hlclients.client_id', '=', 'tbl_hlsanction.client_id')
                     ->join('tbl_hldisbursement', 'tbl_hldisbursement.sanction_id', '=', 'tbl_hlsanction.sanction_id')
                     ->where('tbl_hldisbursement.disb_id', $disb_id)
+                    ->where('tbl_hlsanction.sanction_loan_amt', '>', 0)
                     ->select('bank_details.bank_id', 'bank_details.payout_on', 'tbl_hlsanction.sanction_id', 'tbl_hldisbursement.disb_id', 'tbl_hlclients.client_id', 'bank_details.bank_name', 'tbl_hlsanction.sanction_loan_amt as disb_amt', 'tbl_hldisbursement.disb_date', DB::raw("CONCAT(tbl_hlclients.fname,'_',tbl_hlclients.lname,'-',tbl_hldisbursement.File_no) AS name"))
                     ->get();
-                $disb_date = new Carbon($disbursement->first()->disb_date);
-                $disb_yy = $disb_date->year;
-                $disb_mm = $disb_date->month;
-                return response()->json(['disb_date' => $disb_date, 'disb_yy' => $disb_yy, 'disb_mm' => $disb_mm]);
-
-
                 // return response()->json($disbursement);
             } else if ($disbursementType[0]->payout_on == 'net_disbursement') {
+                // get bisbursement
                 $disbursement = DB::table('tbl_hlsanction')
                     ->join('bank_details', 'bank_details.bank_id', '=', 'tbl_hlsanction.bank_name')
                     ->join('tbl_hlclients', 'tbl_hlclients.client_id', '=', 'tbl_hlsanction.client_id')
                     ->join('tbl_hldisbursement', 'tbl_hldisbursement.sanction_id', '=', 'tbl_hlsanction.sanction_id')
                     ->where('tbl_hldisbursement.disb_id', $disb_id)
+                    ->where('tbl_hldisbursement.disb_amt', '>', 0)
                     ->select('bank_details.bank_id', 'bank_details.payout_on', 'tbl_hlsanction.sanction_id', 'tbl_hldisbursement.disb_id', 'tbl_hlclients.client_id', 'bank_details.bank_name', 'tbl_hldisbursement.disb_amt as disb_amt', 'tbl_hldisbursement.disb_date', DB::raw("CONCAT(tbl_hlclients.fname,'_',tbl_hlclients.lname,'-',tbl_hldisbursement.File_no) AS name"))
                     ->get();
                 // return response()->json($disbursement);
-                // get first object 
+            }
+            if (count($disbursement) > 0) {
+
+                // get first object from disbursements array
                 $firstDisb = $disbursement->first();
-                // 
+                // create date string for search
                 $disb_date = new Carbon($firstDisb->disb_date);
                 $disb_yy = $disb_date->year;
                 $disb_mm = $disb_date->month;
@@ -86,8 +87,7 @@ class InvoiceMultiController extends Controller
                 $disb_yy_mm = $disb_yy . '-' . str_pad($disb_mm, 2, '0', STR_PAD_LEFT);
                 // return response()->json(['disb_date' => $disb_date, 'disb_yy' => $disb_yy, 'disb_mm' => $disb_mm, "disb_yy_mm" => $disb_yy_mm]);
 
-                // return response()->json([$firstDisb->bank_id, $disb_yy_mm]);
-
+                // get all banks in that month
                 $totalDisbsOfBankInThatMonth = DB::table('tbl_hldisbursement')
                     ->where('tbl_hldisbursement.bank_name', $firstDisb->bank_id)
                     ->where('tbl_hldisbursement.disb_date', 'REGEXP', $disb_yy_mm)
@@ -95,10 +95,32 @@ class InvoiceMultiController extends Controller
                     // ->where('tbl_hldisbursement.disb_date', 'REGEXP', $disb_mm)
                     ->select('tbl_hldisbursement.*')
                     ->get();
+                // return response()->json($totalDisbsOfBankInThatMonth);
 
-                return response()->json($totalDisbsOfBankInThatMonth);
+                // calculate sum of disb_amts of that banks in that month
+                $sumOfDisbAmts = 0;
+                for ($i = 0; $i < count($totalDisbsOfBankInThatMonth); $i++) {
+                    $item = $totalDisbsOfBankInThatMonth[$i];
+                    $sumOfDisbAmts += $item->disb_amt;
+                }
+                // return response()->json($sumOfDisbAmts);
+
+                // get bank_payout percentage
+                $bankPayouts = DB::table('bank_payouts')
+                    ->where('min_loan', '<', $sumOfDisbAmts)
+                    ->where('max_loan', '>', $sumOfDisbAmts)
+                    ->where('loan_type', 'Home_Loan')
+                    ->where('bank_name', $firstDisb->bank_id)
+                    ->get();
+                // return response()->json($bankPayouts);
+                if (count($bankPayouts) > 0) {
+                    $payout_in_percent = $bankPayouts->first()->rate_of_commission;
+                    $disbursement->first()->case_payout_percentage = $payout_in_percent;
+                }
+                return response()->json($disbursement);
+            } else {
+                return response()->json(['message' => 'not found']);
             }
-
         } else {
             return response()->json(['message' => 'not found']);
         }
