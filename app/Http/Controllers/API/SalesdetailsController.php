@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\API;
+
 //use DB   
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -269,7 +270,7 @@ class SalesdetailsController extends Controller
 
         $table = $salesdetails->getTable();
 
-        $columns  = Schema::getColumnListing($table);
+        $columns = Schema::getColumnListing($table);
 
         //dd($columns);
         return $columns;
@@ -329,7 +330,7 @@ class SalesdetailsController extends Controller
         }
         return response()->json($count);
     }
-
+    // used in add or edit invoice 
     public function getsales($client_id)
     {
         $sales = DB::table('salesdetails')
@@ -341,6 +342,7 @@ class SalesdetailsController extends Controller
             ->get();
         return response()->json($sales);
     }
+    // used in add or edit invoice 
 
     public function getbookingid()
     {
@@ -402,7 +404,7 @@ class SalesdetailsController extends Controller
 
         for ($i = 1; $i < 13; $i++) {
             foreach ($dateOfData as $key => $value) {
-                $month_no =  explode("/", $key);
+                $month_no = explode("/", $key);
                 if ($month_no[0] === sprintf('%02d', $i)) {
                     $fullmonths[$key] = $value;
                     continue 2;
@@ -453,7 +455,7 @@ class SalesdetailsController extends Controller
 
         for ($i = 1; $i < 13; $i++) {
             foreach ($dateOfData as $key => $value) {
-                $month_no =  explode("/", $key);
+                $month_no = explode("/", $key);
                 if ($month_no[0] === sprintf('%02d', $i)) {
                     $fullmonths[$key] = $value;
                     continue 2;

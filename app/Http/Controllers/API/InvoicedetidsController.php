@@ -16,10 +16,12 @@ class InvoicedetidsController extends Controller
     public function updateInvoiceDetids(Request $request)
     {
         $client_id = $request->input('client_id');
+        $disb_id = $request->input('disb_id');
         $company_id = $request->input('company_id');
         $invoice_num = $request->input('invoice_num');
 
         $invoicedetids = Invoicedetids::where('client_id', $client_id)
+            ->where('disb_id', $disb_id)
             ->where('company_id', $company_id)
             ->where('invoice_num', $invoice_num)
             ->first();

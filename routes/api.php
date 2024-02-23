@@ -221,54 +221,46 @@ Route::apiResource('attendance', AttendanceController::class);
 /////////////  INvOICES MODULE /////////////////
 
 Route::apiResource('invoice', InvoiceController::class);
-Route::apiResource('inv_status', Inv_statusController::class);
 Route::apiResource('receiptdetails', ReceiptDetailsController::class);
 Route::apiResource('credit_note', CreditNoteController::class);
 Route::apiResource('gst_fillingdetails', GstFillingDetailsController::class);
-// by jatin
-// by jatin
-// by jatin
-// by jatin
-// by jatin
-Route::apiResource('invoice_multi', invoiceMultiController::class);
-Route::apiResource('invoicedetids', InvoicedetidsController::class);
-// for invoice types table
+
+// ######################## This Routes defined by jatin (starts here) ######################## //
+// ######################## This Routes defined by jatin (starts here) ######################## //
+// get all invoice types
 Route::apiResource('invoice_types', invoiceTypesController::class);
-
-// check maximum payout for invoiceType==realestate 
-Route::post('/check-max-payout', [InvoiceMultiController::class, 'checkMaxPayout'])->name('checkMaxPayout');
-
-// get invoice's invoice_type_id
+// get invoice_type_id of invoice using invoice_id
 Route::get('/inv-type-id/{id}', [InvoiceMultiController::class, 'getInvTypeId'])->name('getInvTypeId');
-
-// get invoice MULTI
-Route::get('/invoice-multi/{id}/{invTypeId}', [InvoiceMultiController::class, 'getInvoice'])->name('getInvoice');
-// update invoice MULTI
-Route::post('/update-invoice-multi', [InvoiceMultiController::class, 'updateInvoice'])->name('updateInvoice');
-// update invoice detids
-Route::post('/update-invoice-detids', [InvoicedetidsController::class, 'updateInvoiceDetids'])->name('updateInvoiceDetids');
-
-// checks if invoice num exists or not
-Route::get('/invoice_exists/{num}', [InvoiceMultiController::class, 'invoiceNumExists'])->name('invoiceNumExists');
-
-// get companies according to invoice_type_id
+// get all companies list by invoice type
 Route::get('/get-companies-by-inv-type/{invType}', [DebtorcompanydetController::class, 'getCompanyByInvType'])->name('getCompanyByInvType');
-
+// get invoice using invoice_id & invoice_type_id
+Route::get('/invoice-multi/{id}/{invTypeId}', [InvoiceMultiController::class, 'getInvoice'])->name('getInvoice');
 // get Realestate clients 
 Route::get('/get-realestate-clients/{id}', [InvoiceMultiController::class, 'getRealestateClients'])->name('getRealestateClients');
 // get homeloans clients 
 Route::get('/get-homeloans-clients/{id}', [InvoiceMultiController::class, 'getHomeloansClients'])->name('getHomeloansClients');
-
-// get disbursements
+//  get invoice's all type of statuses
+Route::apiResource('inv_status', Inv_statusController::class);
+//  check if invoice number available or not
+Route::get('/invoice_exists/{num}', [InvoiceMultiController::class, 'invoiceNumExists'])->name('invoiceNumExists');
+// get sale detail for invoice type = realestate by client_id
+Route::get('/getsales/{id}', [SalesdetailsController::class, 'getsales'])->name('getsales');
+//  get disb detail for invoice type = home loans by disb_id
 Route::get('/get-disbursement/{id}', [InvoiceMultiController::class, 'getDisbursements'])->name('getDisbursements');
+//  checks maximum payout value for sale for invoice type = realestate
+Route::post('/check-max-payout', [InvoiceMultiController::class, 'checkMaxPayout'])->name('checkMaxPayout');
+// invoice multi routes
+Route::apiResource('invoice_multi', invoiceMultiController::class);
+//  update invoice in invoice_multi table
+Route::post('/update-invoice-multi', [InvoiceMultiController::class, 'updateInvoice'])->name('updateInvoice');
+// invoicedetids routes
+Route::apiResource('invoicedetids', InvoicedetidsController::class);
+// updates invoice's each entry in invoicedetids table
+Route::post('/update-invoice-detids', [InvoicedetidsController::class, 'updateInvoiceDetids'])->name('updateInvoiceDetids');
+// ########################  This Routes defined by jatin (ends here)  ######################## //
+// ########################  This Routes defined by jatin (ends here)  ######################## //
 
-// by jatin
-// by jatin
-// by jatin
-// by jatin
-// by jatin
 /////////// GST R1 //////////////////
-
 Route::apiResource('gst_json', GstjsonController::class);
 Route::apiResource('gstr2a', Gstr2aController::class);
 Route::apiResource('b2binvoices', B2binvoiceController::class);
@@ -414,7 +406,6 @@ Route::group([
   Route::get('/getUser/{id}', [App\Http\Controllers\API\UsersController::class, 'getUser'])->name('getUser');
   Route::get('/getCgst/{id}', [App\Http\Controllers\API\InvoiceController::class, 'getCgst'])->name('getCgst');
   Route::get('/getsalarybyuser_id/{id}', [App\Http\Controllers\API\Salary\MonthlytargetController::class, 'getsalarybyuser_id'])->name('getsalarybyuser_id');
-  Route::get('/getsales/{id}', [App\Http\Controllers\API\SalesdetailsController::class, 'getsales'])->name('getsales');
   Route::get('/getReceivableamt/{id}', [App\Http\Controllers\API\InvoiceController::class, 'getReceivableamt'])->name('getReceivableamt');
   Route::get('/getclientid/{id}', [App\Http\Controllers\API\InvoiceController::class, 'getclientid'])->name('getclientid');
   Route::get('/getlastid', [App\Http\Controllers\API\InvoiceController::class, 'getlastid'])->name('getlastid');
@@ -747,18 +738,14 @@ Route::group([
   Route::post('/updatepphy', [App\Http\Controllers\API\PayvoucherController::class, 'updatePPHY'])->name('updatePPHY');
   Route::post('/updateppy', [App\Http\Controllers\API\PayvoucherController::class, 'updatePPY'])->name('updatePPY');
 
-  // This Routes created By Jatin
-  // This Routes created By Jatin
-  // This Routes created By Jatin
-  // This Routes created By Jatin
+  // ########################  This Routes defined by jatin (starts here)  ######################## //
+  // ########################  This Routes defined by jatin (starts here)  ######################## //
   Route::get('/payment-history', [App\Http\Controllers\paymentHistoryController::class, 'getPaymentHistory'])->name('getPaymentHistory');
   Route::get('/payment-history/{user_id}', [App\Http\Controllers\paymentHistoryController::class, 'getPaymentHistoryById'])->name('getPaymentHistoryById');
   Route::post('/payment-history', [App\Http\Controllers\paymentHistoryController::class, 'createPaymentHistory'])->name('createPaymentHistory');
   Route::post('/payment-history-each', [App\Http\Controllers\paymentHistoryEachController::class, 'createPaymentHistoryEach'])->name('createPaymentHistoryEach');
-  // This Routes created By Jatin
-  // This Routes created By Jatin
-  // This Routes created By Jatin
-  // This Routes created By Jatin
+  // ########################   This Routes defined by jatin (ends here)   ######################## //
+  // ########################   This Routes defined by jatin (ends here)   ######################## //
 
   //22-04-2023
   Route::post('/getdporn', [App\Http\Controllers\API\PayvoucherController::class, 'getDPOrN'])->name('getDPOrN');

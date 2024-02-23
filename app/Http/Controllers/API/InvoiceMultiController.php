@@ -4,19 +4,59 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\InvoiceMulti;
-//use DB   
 use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
 use App\Models\Disbursement;
 
-// import for date 
+// import date package
 use Carbon\Carbon;
 
 class InvoiceMultiController extends Controller
 {
-    // by jatin
-    // by jatin
+    // ######################## created by jatin (starts here) ######################## //
+    // ######################## created by jatin (starts here) ######################## //
+    // get inv type id
+    public function getInvTypeId($invID)
+    {
+        $InvoiceMulti = DB::table('invoice_multi')
+            ->select('invoice_multi.invoice_type_id')
+            ->where('invoice_multi.invoice_multi_id', $invID)
+            ->get();
+        return response()->json($InvoiceMulti);
+    }
+    // get invoice multi & invoice_detids
+    public function getInvoice($invID, $invTypeId)
+    {
+        // get INVOICE MULTI
+        $InvoiceMulti = DB::table('invoice_multi')
+            ->select('*')
+            // ->join('invoicedetids','invoicedetids.invoice_multi_id','=','invoice_multi.invoice_multi_id')
+            ->where('invoice_multi.invoice_multi_id', $invID)
+            ->get();
+
+        // get INVOICE_DETIDS
+        if ($invTypeId == 1) {
+            $InvoiceDetids = DB::table('invoicedetids')
+                // ->select('invoicedetids.*')
+                ->select('invoicedetids.*', 'projects.project_name', 'salesdetails.flat_no', 'salesdetails.wing', 'salesdetails.building_name')
+                ->join('salesdetails', 'salesdetails.client_id', '=', 'invoicedetids.client_id')
+                ->join('projects', 'projects.project_id', '=', 'salesdetails.project_id')
+                ->where('invoicedetids.invoice_multi_id', $invID)
+                ->get();
+        } else if ($invTypeId == 2) {
+            $InvoiceDetids = DB::table('invoicedetids')
+                // ->join('tbl_hlclients', 'tbl_hlclients.client_id', '=', 'invoicedetids.client_id')
+                ->join('tbl_hldisbursement', 'tbl_hldisbursement.disb_id', '=', 'invoicedetids.disb_id')
+                ->where('invoicedetids.invoice_multi_id', $invID)
+                // ->select('invoicedetids.*')
+                ->select('invoicedetids.*', 'tbl_hldisbursement.disb_id', 'tbl_hldisbursement.disb_amt', 'tbl_hldisbursement.disb_date')
+                ->get();
+        } else {
+            $InvoiceDetids = [];
+        }
+        return response()->json(["invMultiData" => $InvoiceMulti, "invDetidsData" => $InvoiceDetids]);
+    }
     // get all realestate clients from salesdetails table
     public function getRealestateClients($id)
     {
@@ -41,7 +81,21 @@ class InvoiceMultiController extends Controller
             ->get();
         return response()->json($data);
     }
+    //  check if invoice number available or not
+    public function invoiceNumExists($num)
+    {
+        $invNumExists = DB::table('invoice_multi')
+            ->select('*')
+            ->where('invoice_num', $num)
+            ->get();
 
+        if (count($invNumExists)) {
+            return response()->json(['bool' => true]);
+        } else {
+            return response()->json(['bool' => false]);
+        }
+        // return response()->json($invNumExists);
+    }
     public function getDisbursements($disb_id)
     {
         $disbursementType = DB::table('tbl_hlsanction')
@@ -91,8 +145,6 @@ class InvoiceMultiController extends Controller
                 $totalDisbsOfBankInThatMonth = DB::table('tbl_hldisbursement')
                     ->where('tbl_hldisbursement.bank_name', $firstDisb->bank_id)
                     ->where('tbl_hldisbursement.disb_date', 'REGEXP', $disb_yy_mm)
-                    // ->where('tbl_hldisbursement.disb_date', 'REGEXP', $disb_yy)
-                    // ->where('tbl_hldisbursement.disb_date', 'REGEXP', $disb_mm)
                     ->select('tbl_hldisbursement.*')
                     ->get();
                 // return response()->json($totalDisbsOfBankInThatMonth);
@@ -150,49 +202,6 @@ class InvoiceMultiController extends Controller
             return response()->json(["message" => "not found"]);
         }
     }
-
-    // get inv type id
-    public function getInvTypeId($invID)
-    {
-        $InvoiceMulti = DB::table('invoice_multi')
-            ->select('invoice_multi.invoice_type_id')
-            ->where('invoice_multi.invoice_multi_id', $invID)
-            ->get();
-        return response()->json($InvoiceMulti);
-    }
-
-    // get invoice multi & invoice_detids
-    public function getInvoice($invID, $invTypeId)
-    {
-        // get INVOICE MULTI
-        $InvoiceMulti = DB::table('invoice_multi')
-            ->select('*')
-            // ->join('invoicedetids','invoicedetids.invoice_multi_id','=','invoice_multi.invoice_multi_id')
-            ->where('invoice_multi.invoice_multi_id', $invID)
-            ->get();
-
-        // get INVOICE_DETIDS
-        if ($invTypeId == 1) {
-            $InvoiceDetids = DB::table('invoicedetids')
-                // ->select('invoicedetids.*')
-                ->select('invoicedetids.*', 'projects.project_name', 'salesdetails.flat_no', 'salesdetails.wing', 'salesdetails.building_name')
-                ->join('salesdetails', 'salesdetails.client_id', '=', 'invoicedetids.client_id')
-                ->join('projects', 'projects.project_id', '=', 'salesdetails.project_id')
-                ->where('invoicedetids.invoice_multi_id', $invID)
-                ->get();
-        } else if ($invTypeId == 2) {
-            $InvoiceDetids = DB::table('invoicedetids')
-                // ->join('tbl_hlclients', 'tbl_hlclients.client_id', '=', 'invoicedetids.client_id')
-                ->join('tbl_hldisbursement', 'tbl_hldisbursement.disb_id', '=', 'invoicedetids.disb_id')
-                ->where('invoicedetids.invoice_multi_id', $invID)
-                // ->select('invoicedetids.*')
-                ->select('invoicedetids.*', 'tbl_hldisbursement.disb_id', 'tbl_hldisbursement.disb_amt', 'tbl_hldisbursement.disb_date')
-                ->get();
-        } else {
-            $InvoiceDetids = [];
-        }
-        return response()->json(["invMultiData" => $InvoiceMulti, "invDetidsData" => $InvoiceDetids]);
-    }
     // update invoice multi table
     public function updateInvoice(Request $request)
     {
@@ -213,9 +222,8 @@ class InvoiceMultiController extends Controller
 
         return response()->json($invoice);
     }
-    // by jatin
-    // by jatin
-
+    // ########################  created by jatin (ends here)  ######################## //
+    // ########################  created by jatin (ends here)  ######################## //
     public function index()
     {
         $InvoiceMulti = InvoiceMulti::all();
@@ -237,7 +245,6 @@ class InvoiceMultiController extends Controller
     public function create(Request $request)
     {
         $newInvoiceMulti = new InvoiceMulti([
-
             'client_id' => $request->get('client_id'),
             'company_id' => $request->get('company_id'),
             'sales_id' => $request->get('sales_id'), //not
@@ -300,8 +307,6 @@ class InvoiceMultiController extends Controller
         ]);
 
         $newInvoiceMulti = new InvoiceMulti([
-
-
             // 'client_id' => $request->get('client_id'),
             'company_id' => $request->get('company_id'),
             'sales_id' => $request->get('sales_id'),
@@ -873,20 +878,7 @@ class InvoiceMultiController extends Controller
     // by jatin
     // by jatin
     // by jatin
-    public function invoiceNumExists($num)
-    {
-        $invNumExists = DB::table('invoice_multi')
-            ->select('*')
-            ->where('invoice_num', $num)
-            ->get();
 
-        if (count($invNumExists)) {
-            return response()->json(['bool' => true]);
-        } else {
-            return response()->json(['bool' => false]);
-        }
-        // return response()->json($invNumExists);
-    }
     // by jatin
     // by jatin
     // by jatin
