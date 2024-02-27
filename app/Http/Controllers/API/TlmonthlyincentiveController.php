@@ -64,6 +64,8 @@ class TlmonthlyincentiveController extends Controller
             'paid_amt' => $request->get('paid_amt'),
             'ince_type' => $request->get('ince_type'),
         ]);
+        return response()->json($newTLM);
+
     }
 
     /**
@@ -162,17 +164,6 @@ class TlmonthlyincentiveController extends Controller
     {
         $newTLM = Tlmonthlyincentive::findOrFail($ince_id);
         return response()->json($newTLM);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
     }
 
     /**
@@ -408,9 +399,17 @@ class TlmonthlyincentiveController extends Controller
             ->where('teamleader_id', '=', $teamleader_id)
             ->where('YearMonth', '=', $YearMonth)
             ->update([
-                'no_tm' => $no_tm, 'no_active_tm' => $no_active_tm, 'total_sales' => $total_sales, 'performance' => $performance, 'tl_eligibility_ince' => $tl_eligibility_ince,
-                "tmi_gpi_ti" => $tmi_gpi_ti, "tmi_ai_ti" => $tmi_ai_ti, "tmi_pi_ti" => $tmi_pi_ti,
-                "tli_mgpi_tl" => $tli_mgpi_tl, "tli_ai_tl" => $tli_ai_tl, "tli_pi_tl" => $tli_pi_tl
+                'no_tm' => $no_tm,
+                'no_active_tm' => $no_active_tm,
+                'total_sales' => $total_sales,
+                'performance' => $performance,
+                'tl_eligibility_ince' => $tl_eligibility_ince,
+                "tmi_gpi_ti" => $tmi_gpi_ti,
+                "tmi_ai_ti" => $tmi_ai_ti,
+                "tmi_pi_ti" => $tmi_pi_ti,
+                "tli_mgpi_tl" => $tli_mgpi_tl,
+                "tli_ai_tl" => $tli_ai_tl,
+                "tli_pi_tl" => $tli_pi_tl
             ]);
 
         return response()->json($data);
@@ -477,23 +476,15 @@ class TlmonthlyincentiveController extends Controller
         $t_id = $request->get('t_id');
         $tl_id = $request->get('tl_id');
 
-        // ->join('users', 'users.user_id', '=', 'tl_monthly_incentive.teamleader_id')
-
         $data = DB::table('tl_monthly_incentive')
-            ->join('team_leaders', function ($join) {
-                $join->on('tl_monthly_incentive.teamleader_id', '=', 'team_leaders.user_id')
-                    ->on('tl_monthly_incentive.team_id', '=', 'team_leaders.team_id');
-            })
-            ->select('tl_monthly_incentive.tli_pi_tl as incentive', 'tl_monthly_incentive.from_date as start_date', 'tl_monthly_incentive.to_date as end_date', 'team_leaders.*', 'tl_monthly_incentive.*',)
             ->where('tl_monthly_incentive.team_id', '=', $t_id)
             ->where('tl_monthly_incentive.teamleader_id', '=', $tl_id)
             ->where('tl_monthly_incentive.tl_eligibility_ince', '=', 1)
+            ->select('tl_monthly_incentive.ince_id', 'tl_monthly_incentive.teamleader_id', 'tl_monthly_incentive.ince_type', 'tl_monthly_incentive.tli_pi_tl as incentive', 'tl_monthly_incentive.from_date', 'tl_monthly_incentive.to_date', 'tl_monthly_incentive.paid_amt', 'tl_monthly_incentive.pending_amt', )
             ->get();
         // dd($data);
         return response()->json($data);
     }
-
-
 
     public function getDueTLQR(Request $request)
     {
@@ -501,14 +492,10 @@ class TlmonthlyincentiveController extends Controller
         $tl_id = $request->get('tl_id');
 
         $data = DB::table('tl_quarterly_incentive')
-            ->select('*', 'tl_quarterly_incentive.quarterly_inc as incentive', 'tl_quarterly_incentive.from_date as start_date', 'tl_quarterly_incentive.to_date as end_date')
-            ->join('team_leaders', function ($join) {
-                $join->on('tl_quarterly_incentive.teamleader_id', '=', 'team_leaders.user_id')
-                    ->on('tl_quarterly_incentive.team_id', '=', 'team_leaders.team_id');
-            })
             ->where('tl_quarterly_incentive.teamleader_id', '=', $tl_id)
             ->where('tl_quarterly_incentive.team_id', '=', $t_id)
             ->where('tl_quarterly_incentive.tl_quarterly_eligible', '=', 1)
+            ->select('tl_quarterly_incentive.ince_id', 'tl_quarterly_incentive.teamleader_id', 'tl_quarterly_incentive.ince_type', 'tl_quarterly_incentive.quarterly_inc as incentive', 'tl_quarterly_incentive.from_date', 'tl_quarterly_incentive.to_date', 'tl_quarterly_incentive.paid_amt', 'tl_quarterly_incentive.pending_amt')
             ->get();
         return response()->json($data);
     }
@@ -519,14 +506,10 @@ class TlmonthlyincentiveController extends Controller
         $tl_id = $request->get('tl_id');
 
         $data = DB::table('tl_halfyear_incentive')
-            ->select('*', 'tl_halfyear_incentive.halfyear_inc as incentive', 'tl_halfyear_incentive.from_date as start_date', 'tl_halfyear_incentive.to_date as end_date')
-            ->join('team_leaders', function ($join) {
-                $join->on('tl_halfyear_incentive.teamleader_id', '=', 'team_leaders.user_id')
-                    ->on('tl_halfyear_incentive.team_id', '=', 'team_leaders.team_id');
-            })
             ->where('tl_halfyear_incentive.teamleader_id', '=', $tl_id)
             ->where('tl_halfyear_incentive.team_id', '=', $t_id)
             ->where('tl_halfyear_incentive.tl_halfyear_eligible', '=', 1)
+            ->select('tl_halfyear_incentive.ince_id', 'tl_halfyear_incentive.teamleader_id', 'tl_halfyear_incentive.ince_type', 'tl_halfyear_incentive.halfyear_inc as incentive', 'tl_halfyear_incentive.from_date', 'tl_halfyear_incentive.to_date', 'tl_halfyear_incentive.paid_amt', 'tl_halfyear_incentive.pending_amt')
             ->get();
         return response()->json($data);
     }
@@ -537,14 +520,10 @@ class TlmonthlyincentiveController extends Controller
         $tl_id = $request->get('tl_id');
 
         $data = DB::table('tl_yearly_incentive')
-            ->select('*', 'tl_yearly_incentive.yearly_inc as incentive', 'tl_yearly_incentive.from_date as start_date', 'tl_yearly_incentive.to_date as end_date')
-            ->join('team_leaders', function ($join) {
-                $join->on('tl_yearly_incentive.teamleader_id', '=', 'team_leaders.user_id')
-                    ->on('tl_yearly_incentive.team_id', '=', 'team_leaders.team_id');
-            })
             ->where('tl_yearly_incentive.teamleader_id', '=', $tl_id)
             ->where('tl_yearly_incentive.team_id', '=', $t_id)
             ->where('tl_yearly_incentive.tl_yearly_eligible', '=', 1)
+            ->select('tl_yearly_incentive.ince_id', 'tl_yearly_incentive.teamleader_id', 'tl_yearly_incentive.ince_type', 'tl_yearly_incentive.yearly_inc as incentive', 'tl_yearly_incentive.from_date', 'tl_yearly_incentive.to_date', 'tl_yearly_incentive.paid_amt', 'tl_yearly_incentive.pending_amt', )
             ->get();
         return response()->json($data);
     }
