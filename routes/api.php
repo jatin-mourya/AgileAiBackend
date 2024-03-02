@@ -1105,3 +1105,12 @@ Route::post('/update-invoice-detids', [InvoicedetidsController::class, 'updateIn
 // ########################  This Routes defined by jatin (ends here)  ######################## //
 // ########################  This Routes defined by jatin (ends here)  ######################## //
 
+
+// ######################## This Routes defined by jatin (starts here) ######################## //
+// ######################## This Routes defined by jatin (starts here) ######################## //
+// get all invoice types 
+Route::get('/get-table-list', [InvoiceMultiController::class, 'getTableList'])->name('getTableList');
+Route::get('/get-table-columns/{tableName}', [InvoiceMultiController::class, 'getTableColumns'])->name('getTableColumns');
+
+// ########################  This Routes defined by jatin (ends here)  ######################## //
+// ########################  This Routes defined by jatin (ends here)  ######################## //

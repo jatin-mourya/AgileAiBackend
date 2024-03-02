@@ -8,12 +8,35 @@ use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
 use App\Models\Disbursement;
-
+use Illuminate\Support\Facades\Schema;
 // import date package
 use Carbon\Carbon;
 
 class InvoiceMultiController extends Controller
 {
+
+    public function getTableList()
+    {        // Get all table names from the database schema
+        $tables = Schema::getConnection()->getDoctrineSchemaManager()->listTableNames();
+
+        // Return the list of tables as JSON response
+        return response()->json(['tables' => $tables]);
+    }
+    public function getTableColumns($tableName)
+    {
+        // Check if the table exists
+        if (Schema::hasTable($tableName)) {
+            // Get columns for the selected table
+            $columns = Schema::getColumnListing($tableName);
+
+            // Return the columns as JSON response
+            return response()->json(['columns' => $columns]);
+        } else {
+            // Return error response if the table doesn't exist
+            return response()->json(['error' => 'Table not found'], 404);
+        }
+    }
+
     // ######################## created by jatin (starts here) ######################## //
     // ######################## created by jatin (starts here) ######################## //
     // get inv type id

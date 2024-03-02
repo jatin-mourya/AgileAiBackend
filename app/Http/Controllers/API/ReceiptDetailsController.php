@@ -182,7 +182,7 @@ class ReceiptDetailsController extends Controller
     }
     public function upCreReceipt(Request $request){
        
-         $Receiptdetails = Receiptdetails::Create(
+         $Receiptdetails = new Receiptdetails(
  
             [   'invoice_id' => $request->get('invoice_id'),
                 'client_id' => $request->get('client_id'),
