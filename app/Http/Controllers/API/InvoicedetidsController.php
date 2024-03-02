@@ -177,7 +177,7 @@ class InvoicedetidsController extends Controller
 
         $invoicedetids = Invoicedetids::find($invoicedetids_id);
         $invoicedetids->update($request->all());
-        return $invoicedetids;
+        return response()->json($invoicedetids);
 
         // $teamleaders = Teamleaders::findOrFail($team_leader_id);
 

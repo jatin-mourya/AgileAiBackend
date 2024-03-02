@@ -1323,12 +1323,13 @@ class MonthlyIncentiveController extends Controller
     }
 
 
-    //19-04-2023
+    // ////////// improved by jatin ///////////////// //
+    // ////////// improved by jatin ///////////////// //
     public function getMDueUser(Request $request)
     {
         $user_id = $request->get('user_id');
         $data = DB::table('tbl_monthly_incentive')
-            ->select('tbl_monthly_incentive.ince_id','tbl_monthly_incentive.user_id','tbl_monthly_incentive.inc_type','tbl_monthly_incentive.from_date','tbl_monthly_incentive.to_date','tbl_monthly_incentive.paid_amt','tbl_monthly_incentive.pending_amt', DB::raw("(tbl_monthly_incentive.pi_sourcing_amt + tbl_monthly_incentive.pi_closing_amt + tbl_monthly_incentive.payout_bonus) as incentive"))
+            ->select('tbl_monthly_incentive.ince_id', 'tbl_monthly_incentive.user_id', 'tbl_monthly_incentive.inc_type', 'tbl_monthly_incentive.from_date', 'tbl_monthly_incentive.to_date', 'tbl_monthly_incentive.paid_amt', 'tbl_monthly_incentive.pending_amt', DB::raw("(tbl_monthly_incentive.pi_sourcing_amt + tbl_monthly_incentive.pi_closing_amt + tbl_monthly_incentive.payout_bonus) as incentive"))
             ->where('tbl_monthly_incentive.user_id', '=', $user_id)
             ->where('tbl_monthly_incentive.monthly_eligible', '=', 1)
             ->where('tbl_monthly_incentive.pending_amt', '!=', 0)
@@ -1342,7 +1343,7 @@ class MonthlyIncentiveController extends Controller
     {
         $user_id = $request->get('user_id');
         $data = DB::table('quarterly_incentive')
-            ->select('quarterly_incentive.id','quarterly_incentive.user_id','quarterly_incentive.inc_type','quarterly_incentive.from_date','quarterly_incentive.to_date','quarterly_incentive.paid_amt','quarterly_incentive.pending_amt','quarterly_incentive.quarterly_inc_amt as incentive')
+            ->select('quarterly_incentive.id', 'quarterly_incentive.user_id', 'quarterly_incentive.inc_type', 'quarterly_incentive.from_date', 'quarterly_incentive.to_date', 'quarterly_incentive.paid_amt', 'quarterly_incentive.pending_amt', 'quarterly_incentive.quarterly_inc_amt as incentive')
             ->where('quarterly_incentive.user_id', '=', $user_id)
             ->where('quarterly_incentive.quarterly_eligible', '=', 1)
             ->where('quarterly_incentive.pending_amt', '!=', 0)
@@ -1354,7 +1355,7 @@ class MonthlyIncentiveController extends Controller
     {
         $user_id = $request->get('user_id');
         $data = DB::table('halfyear_incentive')
-            ->select('halfyear_incentive.half_id','halfyear_incentive.user_id','halfyear_incentive.inc_type','halfyear_incentive.from_date','halfyear_incentive.to_date','halfyear_incentive.paid_amt','halfyear_incentive.pending_amt','halfyear_incentive.halfyear_inc_amt as incentive')
+            ->select('halfyear_incentive.half_id', 'halfyear_incentive.user_id', 'halfyear_incentive.inc_type', 'halfyear_incentive.from_date', 'halfyear_incentive.to_date', 'halfyear_incentive.paid_amt', 'halfyear_incentive.pending_amt', 'halfyear_incentive.halfyear_inc_amt as incentive')
             ->where('halfyear_incentive.user_id', '=', $user_id)
             ->where('halfyear_incentive.halfyear_eligible', '=', 1)
             ->where('halfyear_incentive.pending_amt', '!=', 0)
@@ -1366,13 +1367,15 @@ class MonthlyIncentiveController extends Controller
     {
         $user_id = $request->get('user_id');
         $data = DB::table('year_incentive')
-            ->select('year_incentive.year_id','year_incentive.user_id','year_incentive.inc_type','year_incentive.from_date','year_incentive.to_date','year_incentive.paid_amt','year_incentive.pending_amt','year_incentive.year_inc_amt as incentive')
+            ->select('year_incentive.year_id', 'year_incentive.user_id', 'year_incentive.inc_type', 'year_incentive.from_date', 'year_incentive.to_date', 'year_incentive.paid_amt', 'year_incentive.pending_amt', 'year_incentive.year_inc_amt as incentive')
             ->where('year_incentive.user_id', '=', $user_id)
             ->where('year_incentive.yearly_eligible', '=', 1)
             ->where('year_incentive.pending_amt', '!=', 0)
             ->get();
         return response()->json($data);
     }
+    // ////////// improved by jatin ///////////////// //
+    // ////////// improved by jatin ///////////////// //
 
 
     //get Team and Tl id get users 

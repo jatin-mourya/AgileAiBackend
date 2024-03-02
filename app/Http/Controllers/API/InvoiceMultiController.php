@@ -224,6 +224,7 @@ class InvoiceMultiController extends Controller
     }
     // ########################  created by jatin (ends here)  ######################## //
     // ########################  created by jatin (ends here)  ######################## //
+
     public function index()
     {
         $InvoiceMulti = InvoiceMulti::all();
@@ -438,16 +439,6 @@ class InvoiceMultiController extends Controller
         return response()->json($InvoiceMulti);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($client_id)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
@@ -462,7 +453,7 @@ class InvoiceMultiController extends Controller
 
         $InvoiceMulti = InvoiceMulti::find($client_id);
         $InvoiceMulti->update($request->all());
-        return $InvoiceMulti;
+        return response()->json($InvoiceMulti);
     }
 
     /**
@@ -579,7 +570,7 @@ class InvoiceMultiController extends Controller
     public function getinvoicevalue1()
     {
         $invoData = DB::table('invoice_multi')
-            ->select(DB::raw('COUNT(inv_status_id ) as received'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date', DB::raw("(COUNT(*)) as count")))
+            ->select(DB::raw('COUNT(inv_status_id ) as received'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date'), DB::raw('(COUNT(*)) as count'))
             ->where(DB::raw('YEAR(invoice_date)'), '=', DB::raw('YEAR(CURDATE())'))
             ->where('inv_status_id', '=', 1)
             // ->orderBy(DB::raw('Month(invoice_date)'))
@@ -613,7 +604,7 @@ class InvoiceMultiController extends Controller
     public function getinvoicevalue2()
     {
         $invoData = DB::table('invoice_multi')
-            ->select(DB::raw('COUNT(inv_status_id ) as pending'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date', DB::raw("(COUNT(*)) as count")))
+            ->select(DB::raw('COUNT(inv_status_id ) as pending'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date'), DB::raw('(COUNT(*)) as count'))
             ->where(DB::raw('YEAR(invoice_date)'), '=', DB::raw('YEAR(CURDATE())'))
             ->where('inv_status_id', '=', 2)
             // ->orderBy(DB::raw('Month(invoice_date)'))
@@ -646,7 +637,7 @@ class InvoiceMultiController extends Controller
     public function getinvoicevalue3()
     {
         $invoData = DB::table('invoice_multi')
-            ->select(DB::raw('COUNT(inv_status_id ) as partial'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date', DB::raw("(COUNT(*)) as count")))
+            ->select(DB::raw('COUNT(inv_status_id ) as partial'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date'), DB::raw('(COUNT(*)) as count'))
             ->where(DB::raw('YEAR(invoice_date)'), '=', DB::raw('YEAR(CURDATE())'))
             ->where('inv_status_id', '=', 8)
             // ->orderBy(DB::raw('Month(invoice_date)'))
@@ -723,7 +714,7 @@ class InvoiceMultiController extends Controller
     public function getinvoiceSum1()
     {
         $invoSumData = DB::table('invoice_multi')
-            ->select(DB::raw('Sum(received_amt) as received'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date', DB::raw("(COUNT(*)) as count")))
+            ->select(DB::raw('Sum(received_amt) as received'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date'), DB::raw('(COUNT(*)) as count'))
             ->where(DB::raw('YEAR(invoice_date)'), '=', DB::raw('YEAR(CURDATE())'))
             ->where('inv_status_id', '=', 1)
             // ->orderBy(DB::raw('Month(invoice_date)'))
@@ -754,7 +745,7 @@ class InvoiceMultiController extends Controller
     public function getinvoiceSum2()
     {
         $invoSumData1 = DB::table('invoice_multi')
-            ->select(DB::raw('Sum(due_amt) as pending'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date', DB::raw("(COUNT(*)) as count")))
+            ->select(DB::raw('Sum(due_amt) as pending'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date'), DB::raw('(COUNT(*)) as count'))
             ->where(DB::raw('YEAR(invoice_date)'), '=', DB::raw('YEAR(CURDATE())'))
             ->where('inv_status_id', '=', 2)
             // ->orderBy(DB::raw('Month(invoice_date)'))
@@ -786,7 +777,7 @@ class InvoiceMultiController extends Controller
     public function getinvoiceSum3()
     {
         $invoSumData2 = DB::table('invoice_multi')
-            ->select(DB::raw('Sum(received_amt) as partial_pending'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date', DB::raw("(COUNT(*)) as count")))
+            ->select(DB::raw('Sum(received_amt) as partial_pending'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date'), DB::raw('(COUNT(*)) as count'))
             ->where(DB::raw('YEAR(invoice_date)'), '=', DB::raw('YEAR(CURDATE())'))
             ->where('inv_status_id', '=', 8)
             // ->orderBy(DB::raw('Month(invoice_date)'))
@@ -874,13 +865,4 @@ class InvoiceMultiController extends Controller
             ->get();
         return response()->json($disburse);
     }
-    // by jatin
-    // by jatin
-    // by jatin
-    // by jatin
-
-    // by jatin
-    // by jatin
-    // by jatin
-    // by jatin
 }
