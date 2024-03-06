@@ -76,15 +76,14 @@ class SalesdetailsController extends Controller
             'BA1_amt_paid' => $request->get('BA1_amt_paid'),
             'BA2_amt_paid' => $request->get('BA2_amt_paid'),
             'registration_date' => $request->get('registration_date'),
-            'leadreceived_date' => $request->get('leadreceived_date'),
             'cv_range' => $request->get('cv_range'),
             'business_value' => $request->get('business_value'),
-            'shared_deals' => $request->get('shared_deals'),
             'bv_add' => $request->get('bv_add'),
             'total_payout' => $request->get('total_payout'),
             'received_amt' => $request->get('received_amt')
 
         ]);
+        return response()->json($newSalesdetails);
     }
 
     /**
@@ -196,36 +195,26 @@ class SalesdetailsController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-    // public function show($sales_id)
+    public function show($sales_id)
+    {
+        $salesdetails = Salesdetails::findOrFail($sales_id);
+        $client = Salesdetails::findOrFail($sales_id)->client; 
+        return response()->json(["sale" => $salesdetails, "client" => $client]);
+        // return response()->json([$salesdetails]);
+    }
+
+
+    // public function show(Request $request, $sales_id)
     // {
-    //     $salesdetails = Salesdetails::findOrFail($sales_id);
-    // 	return response()->json($salesdetails);
+    //     $salesdetails = DB::table('salesdetails')
+    //         ->select('salesdetails.*', 'channelpartner.cp_name', 'projects.project_name')
+    //         ->join('projects', 'projects.project_id', '=', 'salesdetails.project_id')
+    //         ->leftjoin('channelpartner', 'channelpartner.cp_id', '=', 'salesdetails.cp_id')
+
+    //         ->where('sales_id', $sales_id)
+    //         ->first();
+    //     return response()->json($salesdetails);
     // }
-
-
-    public function show(Request $request, $sales_id)
-    {
-        $salesdetails = DB::table('salesdetails')
-            ->select('salesdetails.*', 'channelpartner.cp_name', 'projects.project_name')
-            ->join('projects', 'projects.project_id', '=', 'salesdetails.project_id')
-            ->leftjoin('channelpartner', 'channelpartner.cp_id', '=', 'salesdetails.cp_id')
-
-            ->where('sales_id', $sales_id)
-            ->first();
-        return response()->json($salesdetails);
-    }
-
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($sales_id)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
@@ -241,7 +230,7 @@ class SalesdetailsController extends Controller
 
         $salesdetails = Salesdetails::find($sales_id);
         $salesdetails->update($request->all());
-        return $salesdetails;
+        return response()->json($salesdetails);
     }
 
     /**
@@ -437,11 +426,8 @@ class SalesdetailsController extends Controller
     }
     public function getSalesCountReport()
     {
-
-
-
         $salesdetails = DB::table('salesdetails')
-            ->select(DB::raw('COUNT(deal_status_id ) as dsd'), DB::raw('SUM(business_value) as amount'), DB::raw('DATE_FORMAT(booking_date,"%M-%Y") as date', DB::raw("(COUNT(*)) as count")))
+            ->select(DB::raw('COUNT(deal_status_id ) as dsd'), DB::raw('SUM(business_value) as amount'), DB::raw('DATE_FORMAT(booking_date,"%M-%Y") as date'), DB::raw("(COUNT(*)) as count"))
             ->where(DB::raw('YEAR(booking_date)'), '=', DB::raw('YEAR(CURDATE())'))
             ->whereRaw("deal_status_id = '1'")
             ->groupBy(DB::raw('DATE_FORMAT(booking_date,"%M-%Y")'))

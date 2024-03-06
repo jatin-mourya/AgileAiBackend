@@ -9,20 +9,27 @@ class Clientdetails extends Model
 {
     use HasFactory;
 
-	protected $table = 'clientdetails';
+    protected $table = 'clientdetails';
 
-	protected $primaryKey = 'client_id';
-	
+    protected $primaryKey = 'client_id';
+
     protected $fillable = [
-        //'slug',
-        'name',
-        'mobile1',
-        'mobile2',
-        'email1',
-        'email2',
-        'date_of_birth',
-        'catrgory_id',
-        'occupation_id',
-        'address'
-      ];
+        "client_id",
+        "name",
+        "mobile1",
+        "mobile2",
+        "email1",
+        "email2",
+        "date_of_birth",
+        "catrgory_id",
+        "occupation_id",
+        "address",
+        "module",
+        "created_at",
+        "updated_at"
+    ];
+    public function sales()
+    {
+        return $this->hasMany(Salesdetails::class, 'sales_id');
+    }
 }

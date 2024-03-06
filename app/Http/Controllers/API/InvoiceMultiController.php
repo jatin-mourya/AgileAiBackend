@@ -14,24 +14,31 @@ use Carbon\Carbon;
 
 class InvoiceMultiController extends Controller
 {
+    // ######################## charts API created by jatin (starts here) ######################## //
+    // ######################## charts API created by jatin (starts here) ######################## //
+    public function getRelatedTables($tableName)
+    {
+        $foreignKeys = Schema::getConnection()->getDoctrineSchemaManager()->listTableForeignKeys($tableName);
+        return response()->json($foreignKeys);
+    }
     public function getChart(Request $request)
     {
         $table_name = $request->input('table_name');
-        $col1 = $request->input('col1');
-        $col2 = $request->input('col2');
-        // DB::raw("count($col1) as total")
-        // $col1_data = DB::table($table_name)->select($col1)->get();
-        // $col2_data = DB::table($table_name)->select($col2)->get();
-        $col1_data = DB::table($table_name)->select($col1, DB::raw("sum($col2) as $col2"))->groupBy($col1)->get();
-        // $col2_data = DB::table($table_name)->select($col2)->groupBy($col2)->get();
-        // return response()->json(['col1' => $col1_data, 'col2' => $col2_data]);
-        return response()->json($col1_data);
+        $xaxis = $request->input('col1');
+        $yaxis = $request->input('col2');
+
+        $chartData = DB::table($table_name)->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))->where('updated_at', '>', '2023-01-01')->groupBy($xaxis)->get();
+
+        return response()->json($chartData);
 
     }
+    // Get all table names from the database schema
     public function getTableList()
-    {        // Get all table names from the database schema
+    {
+        // working 1
         $tables = Schema::getConnection()->getDoctrineSchemaManager()->listTableNames();
-
+        // working 2
+        // $tables = DB::select('SHOW TABLES');
         // Return the list of tables as JSON response
         return response()->json(['tables' => $tables]);
     }
@@ -49,6 +56,8 @@ class InvoiceMultiController extends Controller
             return response()->json(['error' => 'Table not found'], 404);
         }
     }
+    // ######################## charts API created by jatin (ends here) ######################## //
+    // ######################## charts API created by jatin (ends here) ######################## //
 
     // ######################## created by jatin (starts here) ######################## //
     // ######################## created by jatin (starts here) ######################## //
