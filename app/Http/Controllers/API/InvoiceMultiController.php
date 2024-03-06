@@ -14,7 +14,20 @@ use Carbon\Carbon;
 
 class InvoiceMultiController extends Controller
 {
+    public function getChart(Request $request)
+    {
+        $table_name = $request->input('table_name');
+        $col1 = $request->input('col1');
+        $col2 = $request->input('col2');
+        // DB::raw("count($col1) as total")
+        // $col1_data = DB::table($table_name)->select($col1)->get();
+        // $col2_data = DB::table($table_name)->select($col2)->get();
+        $col1_data = DB::table($table_name)->select($col1, DB::raw("sum($col2) as $col2"))->groupBy($col1)->get();
+        // $col2_data = DB::table($table_name)->select($col2)->groupBy($col2)->get();
+        // return response()->json(['col1' => $col1_data, 'col2' => $col2_data]);
+        return response()->json($col1_data);
 
+    }
     public function getTableList()
     {        // Get all table names from the database schema
         $tables = Schema::getConnection()->getDoctrineSchemaManager()->listTableNames();

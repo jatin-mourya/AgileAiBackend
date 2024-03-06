@@ -1111,6 +1111,7 @@ Route::post('/update-invoice-detids', [InvoicedetidsController::class, 'updateIn
 // get all invoice types 
 Route::get('/get-table-list', [InvoiceMultiController::class, 'getTableList'])->name('getTableList');
 Route::get('/get-table-columns/{tableName}', [InvoiceMultiController::class, 'getTableColumns'])->name('getTableColumns');
+Route::post('/get-chart', [InvoiceMultiController::class, 'getChart'])->name('getChart');
 
 // ########################  This Routes defined by jatin (ends here)  ######################## //
 // ########################  This Routes defined by jatin (ends here)  ######################## //
