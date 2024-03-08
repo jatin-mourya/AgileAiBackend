@@ -4,6 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+// For Table Relationship 
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+// For Table Relationship 
 
 class Salesdetails extends Model
 {
@@ -61,27 +66,30 @@ class Salesdetails extends Model
 		"created_at"
 	];
 
-	public function client()
+	// syntax : 
+	// belongsTo(model,'foreign_key_name col in current(child) model(Salesdetails)','primary_key_name col in parent model(Clientdetails))
+
+	public function client(): BelongsTo
 	{
-		return $this->belongsTo(Clientdetails::class, 'client_id');
+		return $this->belongsTo(Clientdetails::class, 'client_id', 'client_id');
 	}
-	public function company()
+	public function company(): BelongsTo
 	{
 		return $this->belongsTo(Debtorcompanydet::class);
 	}
-	public function project()
+	public function project(): BelongsTo
 	{
 		return $this->belongsTo(Projects::class);
 	}
-	public function subproject()
+	public function subproject(): BelongsTo
 	{
 		return $this->belongsTo(Subprojects::class);
 	}
-	public function channelPartner()
+	public function channelPartner(): BelongsTo
 	{
 		return $this->belongsTo(Channelpartner::class);
 	}
-	public function teamLeader()
+	public function teamLeader(): BelongsTo
 	{
 		return $this->belongsTo(Teamleaders::class);
 	}

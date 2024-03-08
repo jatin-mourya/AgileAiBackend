@@ -197,10 +197,11 @@ class SalesdetailsController extends Controller
 
     public function show($sales_id)
     {
+        // by jatin
         $salesdetails = Salesdetails::findOrFail($sales_id);
-        $client = Salesdetails::findOrFail($sales_id)->client; 
+        $client = Salesdetails::findOrFail($sales_id)->client;
         return response()->json(["sale" => $salesdetails, "client" => $client]);
-        // return response()->json([$salesdetails]);
+        // by jatin
     }
 
 

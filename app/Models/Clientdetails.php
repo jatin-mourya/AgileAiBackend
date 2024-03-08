@@ -5,6 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+// For Table Relationship 
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+// For Table Relationship 
+
 class Clientdetails extends Model
 {
     use HasFactory;
@@ -28,8 +34,10 @@ class Clientdetails extends Model
         "created_at",
         "updated_at"
     ];
-    public function sales()
+    // syntax : 
+    // hasMany(model,'foreign_key_name in child model(Salesdetails)','primary_key_name in current(parent) model(Clientdetails))
+    public function sales(): HasMany
     {
-        return $this->hasMany(Salesdetails::class, 'sales_id');
+        return $this->hasMany(Salesdetails::class, 'client_id', 'client_id');
     }
 }

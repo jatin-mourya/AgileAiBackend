@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\InvoiceMulti;
+use App\Models\Salesdetails;
 use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
@@ -18,8 +19,42 @@ class InvoiceMultiController extends Controller
     // ######################## charts API created by jatin (starts here) ######################## //
     public function getRelatedTables($tableName)
     {
-        $foreignKeys = Schema::getConnection()->getDoctrineSchemaManager()->listTableForeignKeys($tableName);
-        return response()->json($foreignKeys);
+        // $foreignKeys = Schema::getConnection()->getDoctrineSchemaManager()->listTableForeignKeys($tableName);
+        // $relatedTables = [];
+        // foreach ($foreignKeys as $constraint) {
+        //     // Extract the referenced table name
+        //     $relatedTables[] = $constraint->getLocalColumns()[0];
+        // }
+        // return response()->json($relatedTables);
+
+        // all tables
+        $tables = Schema::getConnection()->getDoctrineSchemaManager()->listTableNames();
+
+
+
+        // Check if the table exists
+        if (Schema::hasTable($tableName)) {
+            $allT = [];
+            // foreach ($tables as $table) {
+            // Get the foreign keys that reference the specified table
+            // $foreignKeys = DB::select("SELECT TABLE_NAME
+            //                             FROM information_schema.key_column_usage
+            //                             WHERE referenced_table_name = $tableName
+            //                             AND table_schema = DATABASE()");
+            // // Extract the table names from the result
+            // $relatedTables = array_map(function ($key) {
+            //     return $key->TABLE_NAME;
+            // }, $foreignKeys);
+            // array_push($allT, $relatedTables);
+            // }
+
+            // Return the list of related tables as JSON response
+            // return response()->json(['related_tables' => $relatedTables]);
+
+        } else {
+            // Return error response if the table doesn't exist
+            return response()->json(['error' => 'Table not found'], 404);
+        }
     }
     public function getChart(Request $request)
     {
@@ -27,7 +62,12 @@ class InvoiceMultiController extends Controller
         $xaxis = $request->input('col1');
         $yaxis = $request->input('col2');
 
-        $chartData = DB::table($table_name)->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))->where('updated_at', '>', '2023-01-01')->groupBy($xaxis)->get();
+        $chartData = DB::table($table_name)
+            ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
+            ->where('updated_at', '>', '2023-01-01')
+            ->groupBy($xaxis)
+            ->limit(100)
+            ->get();
 
         return response()->json($chartData);
 
@@ -39,6 +79,8 @@ class InvoiceMultiController extends Controller
         $tables = Schema::getConnection()->getDoctrineSchemaManager()->listTableNames();
         // working 2
         // $tables = DB::select('SHOW TABLES');
+        // working 3
+        // $tables = Schema::getAllTables();
         // Return the list of tables as JSON response
         return response()->json(['tables' => $tables]);
     }
