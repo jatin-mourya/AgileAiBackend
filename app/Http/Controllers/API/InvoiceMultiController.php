@@ -58,18 +58,37 @@ class InvoiceMultiController extends Controller
     }
     public function getChart(Request $request)
     {
+        $now = Carbon::now();
+
         $table_name = $request->input('table_name');
-        $xaxis = $request->input('col1');
-        $yaxis = $request->input('col2');
+        $xaxis = $request->input('xaxis');
+        $yaxis = $request->input('yaxis');
+        $limit = $request->input('limit');
+
+        $from_date = null;
+        $to_date = null;
+        $daterange = $request->input('daterange');
+        $dateRangeArr = explode(',', $daterange);
+        $from_date = $dateRangeArr[0] ?? '1970-01-01';
+        $to_date = $dateRangeArr[1] ?? $now->format('Y-m-d');
 
         $chartData = DB::table($table_name)
             ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
-            ->where('updated_at', '>', '2023-01-01')
+            ->where('created_at', '>', $from_date)
+            ->where('created_at', '<', $to_date)
             ->groupBy($xaxis)
-            ->limit(100)
+            ->limit($limit)
             ->get();
 
-        return response()->json($chartData);
+        $sqlQuery = DB::table($table_name)
+            ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
+            ->where('created_at', '>', $from_date)
+            ->where('created_at', '<', $to_date)
+            ->groupBy($xaxis)
+            ->limit($limit)
+            ->toSql();
+
+        return response()->json(['data' => $chartData, 'sqlQuery' => $sqlQuery]);
 
     }
     // Get all table names from the database schema
