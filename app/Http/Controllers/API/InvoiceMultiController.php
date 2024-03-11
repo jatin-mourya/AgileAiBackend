@@ -64,26 +64,38 @@ class InvoiceMultiController extends Controller
         $xaxis = $request->input('xaxis');
         $yaxis = $request->input('yaxis');
         $limit = $request->input('limit');
+        $filterByXvalue = $request->input('filterByXvalue');
 
-        $from_date = null;
-        $to_date = null;
         $daterange = $request->input('daterange');
         $dateRangeArr = explode(',', $daterange);
-        $from_date = $dateRangeArr[0] ?? '1970-01-01';
-        $to_date = $dateRangeArr[1] ?? $now->format('Y-m-d');
+
+        $from_date = $dateRangeArr[0];
+        $to_date = $dateRangeArr[1];
+
+        if (empty($from_date)) {
+            $from_date = '1970-01-01';
+        }
+        if (empty($to_date)) {
+            $to_date = $now->format('Y-m-d');
+        }
+
+        // dd($from_date, $to_date);
 
         $chartData = DB::table($table_name)
             ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
             ->where('created_at', '>', $from_date)
             ->where('created_at', '<', $to_date)
+            // ->where($xaxis, $filterByXvalue)
             ->groupBy($xaxis)
             ->limit($limit)
             ->get();
 
+        // dd($chartData);
         $sqlQuery = DB::table($table_name)
             ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
             ->where('created_at', '>', $from_date)
             ->where('created_at', '<', $to_date)
+            // ->where($xaxis, $filterByXvalue)
             ->groupBy($xaxis)
             ->limit($limit)
             ->toSql();
