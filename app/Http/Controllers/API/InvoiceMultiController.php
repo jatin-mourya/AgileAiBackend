@@ -4,133 +4,15 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\InvoiceMulti;
-use App\Models\Salesdetails;
 use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
 use App\Models\Disbursement;
-use Illuminate\Support\Facades\Schema;
 // import date package
 use Carbon\Carbon;
 
 class InvoiceMultiController extends Controller
 {
-    // ######################## charts API created by jatin (starts here) ######################## //
-    // ######################## charts API created by jatin (starts here) ######################## //
-    public function getRelatedTables($tableName)
-    {
-        // $foreignKeys = Schema::getConnection()->getDoctrineSchemaManager()->listTableForeignKeys($tableName);
-        // $relatedTables = [];
-        // foreach ($foreignKeys as $constraint) {
-        //     // Extract the referenced table name
-        //     $relatedTables[] = $constraint->getLocalColumns()[0];
-        // }
-        // return response()->json($relatedTables);
-
-        // all tables
-        $tables = Schema::getConnection()->getDoctrineSchemaManager()->listTableNames();
-
-
-
-        // Check if the table exists
-        if (Schema::hasTable($tableName)) {
-            $allT = [];
-            // foreach ($tables as $table) {
-            // Get the foreign keys that reference the specified table
-            // $foreignKeys = DB::select("SELECT TABLE_NAME
-            //                             FROM information_schema.key_column_usage
-            //                             WHERE referenced_table_name = $tableName
-            //                             AND table_schema = DATABASE()");
-            // // Extract the table names from the result
-            // $relatedTables = array_map(function ($key) {
-            //     return $key->TABLE_NAME;
-            // }, $foreignKeys);
-            // array_push($allT, $relatedTables);
-            // }
-
-            // Return the list of related tables as JSON response
-            // return response()->json(['related_tables' => $relatedTables]);
-
-        } else {
-            // Return error response if the table doesn't exist
-            return response()->json(['error' => 'Table not found'], 404);
-        }
-    }
-    public function getChart(Request $request)
-    {
-        $now = Carbon::now();
-
-        $table_name = $request->input('table_name');
-        $xaxis = $request->input('xaxis');
-        $yaxis = $request->input('yaxis');
-        $limit = $request->input('limit');
-        $filterByXvalue = $request->input('filterByXvalue');
-
-        $daterange = $request->input('daterange');
-        $dateRangeArr = explode(',', $daterange);
-
-        $from_date = $dateRangeArr[0];
-        $to_date = $dateRangeArr[1];
-
-        if (empty($from_date)) {
-            $from_date = '1970-01-01';
-        }
-        if (empty($to_date)) {
-            $to_date = $now->format('Y-m-d');
-        }
-
-        // dd($from_date, $to_date);
-
-        $chartData = DB::table($table_name)
-            ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
-            ->where('created_at', '>', $from_date)
-            ->where('created_at', '<', $to_date)
-            // ->where($xaxis, $filterByXvalue)
-            ->groupBy($xaxis)
-            ->limit($limit)
-            ->get();
-
-        // dd($chartData);
-        $sqlQuery = DB::table($table_name)
-            ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
-            ->where('created_at', '>', $from_date)
-            ->where('created_at', '<', $to_date)
-            // ->where($xaxis, $filterByXvalue)
-            ->groupBy($xaxis)
-            ->limit($limit)
-            ->toSql();
-
-        return response()->json(['data' => $chartData, 'sqlQuery' => $sqlQuery]);
-
-    }
-    // Get all table names from the database schema
-    public function getTableList()
-    {
-        // working 1
-        $tables = Schema::getConnection()->getDoctrineSchemaManager()->listTableNames();
-        // working 2
-        // $tables = DB::select('SHOW TABLES');
-        // working 3
-        // $tables = Schema::getAllTables();
-        // Return the list of tables as JSON response
-        return response()->json(['tables' => $tables]);
-    }
-    public function getTableColumns($tableName)
-    {
-        // Check if the table exists
-        if (Schema::hasTable($tableName)) {
-            // Get columns for the selected table
-            $columns = Schema::getColumnListing($tableName);
-
-            // Return the columns as JSON response
-            return response()->json(['columns' => $columns]);
-        } else {
-            // Return error response if the table doesn't exist
-            return response()->json(['error' => 'Table not found'], 404);
-        }
-    }
-    // ######################## charts API created by jatin (ends here) ######################## //
-    // ######################## charts API created by jatin (ends here) ######################## //
 
     // ######################## created by jatin (starts here) ######################## //
     // ######################## created by jatin (starts here) ######################## //
@@ -294,7 +176,6 @@ class InvoiceMultiController extends Controller
         } else {
             return response()->json(['message' => 'not found']);
         }
-
     }
 
     // checks max payout value for single sale in salesdetails table

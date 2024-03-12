@@ -1108,12 +1108,16 @@ Route::post('/update-invoice-detids', [InvoicedetidsController::class, 'updateIn
 
 // ######################## This Routes defined by jatin (starts here) ######################## //
 // ######################## This Routes defined by jatin (starts here) ######################## //
+
+use App\Http\Controllers\ChartsController;
 // get all tables list
-Route::get('/get-table-list', [InvoiceMultiController::class, 'getTableList'])->name('getTableList');
-Route::get('/get-related-table/{tableName}', [InvoiceMultiController::class, 'getRelatedTables'])->name('getRelatedTables');
+Route::get('/get-table-list', [ChartsController::class, 'getTableList'])->name('getTableList');
+Route::get('/get-related-table/{tableName}', [ChartsController::class, 'getRelatedTables'])->name('getRelatedTables');
 // get all column list of a table
-Route::get('/get-table-columns/{tableName}', [InvoiceMultiController::class, 'getTableColumns'])->name('getTableColumns');
+Route::get('/get-table-columns/{tableName}', [ChartsController::class, 'getTableColumns'])->name('getTableColumns');
+Route::get('/get-table-columns-by-module/{moduleName}', [ChartsController::class, 'getTableColumnsByModuleName'])->name('getTableColumnsByModuleName');
 // get Chart
-Route::post('/get-chart', [InvoiceMultiController::class, 'getChart'])->name('getChart');
+Route::post('/get-chart', [ChartsController::class, 'getChart'])->name('getChart');
+Route::post('/get-chart2', [ChartsController::class, 'getChart2'])->name('getChart2');
 // ########################  This Routes defined by jatin (ends here)  ######################## //
 // ########################  This Routes defined by jatin (ends here)  ######################## //
