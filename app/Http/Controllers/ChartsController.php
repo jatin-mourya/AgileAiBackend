@@ -20,7 +20,7 @@ class ChartsController extends Controller
     {
         $tableName = '';
         $tablesToLoop = [];
-        $salesRelatedTables = ['salesdetails', 'clientdetails', 'teams', 'users', 'debtor_company_det', 'channelpartner', 'projects', 'subprojects', 'payout_status', 'leadsource'];
+        $salesRelatedTables = ['salesdetails', 'clientdetails', 'teams', 'users', 'debtor_company_det', 'channelpartner', 'projects', 'subprojects', 'payout_status', 'leadsource', 'inv_status'];
         $invoiceRelatedTables = ['invoice_multi', 'invoicedetids'];
 
         if ($moduleName == 'sales') {
@@ -119,7 +119,7 @@ class ChartsController extends Controller
     {
         $now = Carbon::now();
 
-        $salesRelatedTables = ['salesdetails', 'clientdetails', 'teams', 'users', 'debtor_company_det', 'channelpartner', 'projects', 'subprojects', 'payout_status', 'leadsource'];
+        $salesRelatedTables = ['salesdetails', 'clientdetails', 'teams', 'users', 'debtor_company_det', 'channelpartner', 'projects', 'subprojects', 'payout_status', 'leadsource', 'inv_status'];
         $invoiceRelatedTables = ['invoice_multi', 'invoicedetids'];
 
         $moduleName = $request->input('moduleName');
@@ -129,6 +129,7 @@ class ChartsController extends Controller
         $yaxis = $request->input('yaxis');
         $limit = $request->input('limit');
         $filterByXvalue = $request->input('filterByXvalue');
+        $groupByX = $request->input('groupByX');
 
         $daterange = $request->input('daterange');
         $dateRangeArr = explode(',', $daterange);
@@ -150,69 +151,68 @@ class ChartsController extends Controller
         } else if ($moduleName == 'invoice') {
             $mainTable = 'invoice_multi';
         }
+        // for as col_name
         $yaxisAS = explode('.', $yaxis)[1];
+
         $chartData = DB::table($mainTable)
             ->join('clientdetails', 'clientdetails.client_id', 'salesdetails.client_id')
             ->join('debtor_company_det', 'debtor_company_det.debtor_company_det_id', 'salesdetails.debtor_company_det_id')
             ->join('teams', 'teams.team_id', 'salesdetails.team_id')
             ->join('users', 'users.user_id', 'salesdetails.sourcing_emp_id')
-            ->join('users', 'users.user_id', 'salesdetails.closing_emp_id')
+            ->join('users as u2', 'u2.user_id', 'salesdetails.closing_emp_id')
             ->join('projects', 'projects.project_id', 'salesdetails.project_id')
             ->join('subprojects', 'subprojects.subproject_id', 'salesdetails.subproject_id')
-            ->join('channelpartner', 'channelpartner.cp_id', 'salesdetails.cp_id')
-            ->join('inv_status', 'inv_status.inv_status_id', 'salesdetails.inv_status')
-            ->join('leadsource', 'leadsource.leadsource_id', 'salesdetails.leadsource_id')
-            ->select($xaxis, DB::raw("sum($yaxis) as $yaxisAS"))
-            ->where('salesdetails.created_at', '>', $from_date)
-            ->where('salesdetails.created_at', '<', $to_date)
-            // ->where($xaxis, $filterByXvalue)
-            ->groupBy($xaxis)
-            ->limit($limit)
-            ->get();
-        // foreach ($chartData as $i => $item) {
-        //     $item[$yaxisAS] = intval($item[$yaxisAS]);
-        // }
-        $sqlQuery = DB::table($mainTable)
-            ->join('clientdetails', 'clientdetails.client_id', 'salesdetails.client_id')
-            ->join('debtor_company_det', 'debtor_company_det.debtor_company_det_id', 'salesdetails.debtor_company_det_id')
-            ->join('teams', 'teams.team_id', 'salesdetails.team_id')
-            ->join('users', 'users.user_id', 'salesdetails.sourcing_emp_id')
-            ->join('users', 'users.user_id', 'salesdetails.closing_emp_id')
-            ->join('projects', 'projects.project_id', 'salesdetails.project_id')
-            ->join('subprojects', 'subprojects.subproject_id', 'salesdetails.subproject_id')
-            ->join('channelpartner', 'channelpartner.cp_id', 'salesdetails.cp_id')
+            // ->join('channelpartner', 'channelpartner.cp_id', 'salesdetails.cp_id')
             ->join('inv_status', 'inv_status.inv_status_id', 'salesdetails.inv_status')
             ->join('leadsource', 'leadsource.leadsource_id', 'salesdetails.leadsource_id')
             ->join('payout_status', 'payout_status.payout_status_id', 'salesdetails.payout_status_id')
-            ->select($xaxis, DB::raw("sum($yaxis) as $yaxisAS"))
+            // ->select($xaxis, DB::raw("sum($yaxis) as $yaxisAS"))
             ->where('salesdetails.created_at', '>', $from_date)
-            ->where('salesdetails.created_at', '<', $to_date)
-            // ->where($xaxis, $filterByXvalue)
-            ->groupBy($xaxis)
-            ->limit($limit)
-            ->toSql();
-        // dd($from_date, $to_date);
-
-        // $chartData = DB::table($table_name)
-        //     ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
-        //     ->where('created_at', '>', $from_date)
-        //     ->where('created_at', '<', $to_date)
+            ->where('salesdetails.created_at', '<', $to_date);
         //     // ->where($xaxis, $filterByXvalue)
-        //     ->groupBy($xaxis)
-        //     ->limit($limit)
-        //     ->get();
-
-        // // dd($chartData);
-        // $sqlQuery = DB::table($table_name)
-        //     ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
-        //     ->where('created_at', '>', $from_date)
-        //     ->where('created_at', '<', $to_date)
+        // ->groupBy($xaxis)
+        // ->limit($limit)
+        // ->get();
+        // DB::raw("CAST(SUM($yaxis) AS UNSIGNED) AS $yaxisAS")
+        if ($groupByX) {
+            $chartData = $chartData
+                ->select($xaxis, DB::raw("CAST(sum($yaxis)AS UNSIGNED) as $yaxisAS"))
+                ->groupBy($xaxis);
+        } else {
+            $chartData = $chartData
+                ->select($xaxis, $yaxis);
+        }
+        // if filter by x axis
+        if ($filterByXvalue) {
+            $chartData = $chartData
+                ->where($xaxis, $filterByXvalue);
+        }
+        $chartData = $chartData
+            ->orderBy($xaxis)
+            ->limit($limit)->get();
+        // dd($chartData);
+        return response()->json(['data' => $chartData]);
+        // $sqlQuery = DB::table($mainTable)
+        //     ->join('clientdetails', 'clientdetails.client_id', 'salesdetails.client_id')
+        //     ->join('debtor_company_det', 'debtor_company_det.debtor_company_det_id', 'salesdetails.debtor_company_det_id')
+        //     ->join('teams', 'teams.team_id', 'salesdetails.team_id')
+        //     ->join('users as u1', 'u1.user_id', 'salesdetails.sourcing_emp_id')
+        //     ->join('users as u2', 'u2.user_id', 'salesdetails.closing_emp_id')
+        //     ->join('projects', 'projects.project_id', 'salesdetails.project_id')
+        //     ->join('subprojects', 'subprojects.subproject_id', 'salesdetails.subproject_id')
+        //     // ->join('channelpartner', 'channelpartner.cp_id', 'salesdetails.cp_id')
+        //     ->join('inv_status', 'inv_status.inv_status_id', 'salesdetails.inv_status')
+        //     ->join('leadsource', 'leadsource.leadsource_id', 'salesdetails.leadsource_id')
+        //     ->select($xaxis, DB::raw("sum($yaxis) as $yaxisAS"))
+        //     ->where('salesdetails.created_at', '>', $from_date)
+        //     ->where('salesdetails.created_at', '<', $to_date)
         //     // ->where($xaxis, $filterByXvalue)
         //     ->groupBy($xaxis)
         //     ->limit($limit)
         //     ->toSql();
+        // // dd($from_date, $to_date);
 
-        return response()->json(['data' => $chartData, 'sqlQuery' => $sqlQuery]);
+        // return response()->json(['data' => $chartData, 'sqlQuery' => $sqlQuery]);
     }
     public function getChart(Request $request)
     {
