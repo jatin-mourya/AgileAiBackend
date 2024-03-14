@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\InvoiceMulti;
-use Illuminate\Support\Facades\DB;
-
-use Illuminate\Http\Request;
 use App\Models\Disbursement;
-// import date package
+use App\Models\InvoiceMulti;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+// import date package
+use Illuminate\Support\Facades\DB;
 
 class InvoiceMultiController extends Controller
 {
@@ -31,14 +30,14 @@ class InvoiceMultiController extends Controller
         // get INVOICE MULTI
         $InvoiceMulti = DB::table('invoice_multi')
             ->select('*')
-            // ->join('invoicedetids','invoicedetids.invoice_multi_id','=','invoice_multi.invoice_multi_id')
+        // ->join('invoicedetids','invoicedetids.invoice_multi_id','=','invoice_multi.invoice_multi_id')
             ->where('invoice_multi.invoice_multi_id', $invID)
             ->get();
 
         // get INVOICE_DETIDS
         if ($invTypeId == 1) {
             $InvoiceDetids = DB::table('invoicedetids')
-                // ->select('invoicedetids.*')
+            // ->select('invoicedetids.*')
                 ->select('invoicedetids.*', 'projects.project_name', 'salesdetails.flat_no', 'salesdetails.wing', 'salesdetails.building_name')
                 ->join('salesdetails', 'salesdetails.client_id', '=', 'invoicedetids.client_id')
                 ->join('projects', 'projects.project_id', '=', 'salesdetails.project_id')
@@ -46,10 +45,10 @@ class InvoiceMultiController extends Controller
                 ->get();
         } else if ($invTypeId == 2) {
             $InvoiceDetids = DB::table('invoicedetids')
-                // ->join('tbl_hlclients', 'tbl_hlclients.client_id', '=', 'invoicedetids.client_id')
+            // ->join('tbl_hlclients', 'tbl_hlclients.client_id', '=', 'invoicedetids.client_id')
                 ->join('tbl_hldisbursement', 'tbl_hldisbursement.disb_id', '=', 'invoicedetids.disb_id')
                 ->where('invoicedetids.invoice_multi_id', $invID)
-                // ->select('invoicedetids.*')
+            // ->select('invoicedetids.*')
                 ->select('invoicedetids.*', 'tbl_hldisbursement.disb_id', 'tbl_hldisbursement.disb_amt', 'tbl_hldisbursement.disb_date')
                 ->get();
         } else {
@@ -58,11 +57,23 @@ class InvoiceMultiController extends Controller
         return response()->json(["invMultiData" => $InvoiceMulti, "invDetidsData" => $InvoiceDetids]);
     }
     // get all realestate clients from salesdetails table
+    // public function getRealestateClients($id)
+    // {
+    //     $data1 = DB::table('salesdetails')
+    //         ->join('clientdetails', 'clientdetails.client_id', '=', 'salesdetails.client_id')
+    //         ->select('clientdetails.client_id', 'clientdetails.name')
+    //         ->where('salesdetails.debtor_company_det_id', $id)
+    //         ->where('salesdetails.deal_status_id', '=', 1)
+    //         ->whereIn('salesdetails.payout_status_id', [3, 4])
+    //         ->get();
+    //     return response()->json($data1);
+    // }
+    // get all realestate clients from salesdetails table
     public function getRealestateClients($id)
     {
         $data1 = DB::table('salesdetails')
             ->join('clientdetails', 'clientdetails.client_id', '=', 'salesdetails.client_id')
-            ->select('clientdetails.client_id', 'clientdetails.name')
+            ->select('clientdetails.client_id', 'salesdetails.sales_id', 'clientdetails.name')
             ->where('salesdetails.debtor_company_det_id', $id)
             ->where('salesdetails.deal_status_id', '=', 1)
             ->whereIn('salesdetails.payout_status_id', [3, 4])
@@ -71,7 +82,7 @@ class InvoiceMultiController extends Controller
     }
     // get all homeloans clients from disbursements table
     public function getHomeloansClients($id)
-    {   // first check payout_on if sanction or net_disbursement
+    { // first check payout_on if sanction or net_disbursement
         $data = DB::table('tbl_hlsanction')
             ->join('bank_details', 'bank_details.bank_id', '=', 'tbl_hlsanction.bank_name')
             ->join('tbl_hlclients', 'tbl_hlclients.client_id', '=', 'tbl_hlsanction.client_id')
@@ -231,7 +242,7 @@ class InvoiceMultiController extends Controller
             ->join('debtor_company_det', 'debtor_company_det.debtor_company_det_id', '=', 'invoice_multi.company_id')
             ->join('inv_status', 'inv_status.inv_status_id', '=', 'invoice_multi.inv_status_id')
             ->select('invoice_multi.*', 'invoice_multi.invoice_multi_id', 'invoice_multi.invoice_num', 'invoice_multi.company_id', 'invoice_multi.total_gst_amt', 'debtor_company_det.cname', 'debtor_company_det.gst_no', 'inv_status.status')
-            // ->select('invoice_multi.invoice_multi_id','invoice_multi.invoice_num','invoice_multi.company_id','invoice_multi.total_gst_amt','debtor_company_det.cname', 'debtor_company_det.cgst','inv_status.status')
+        // ->select('invoice_multi.invoice_multi_id','invoice_multi.invoice_num','invoice_multi.company_id','invoice_multi.total_gst_amt','debtor_company_det.cname', 'debtor_company_det.cgst','inv_status.status')
             ->orderBy('invoice_multi.updated_at', 'DESC')
             ->get();
         return response()->json($InvoiceMulti);
@@ -267,7 +278,7 @@ class InvoiceMultiController extends Controller
             'inv_submitted_date' => $request->get('inv_submitted_date'),
             'due_amt' => $request->get('due_amt'),
             'credit_note_amt' => $request->get('credit_note_amt'), //not
-            'invoice_type_id' => $request->get('invoice_type_id')
+            'invoice_type_id' => $request->get('invoice_type_id'),
         ]);
         return response()->json($newInvoiceMulti);
     }
@@ -303,7 +314,7 @@ class InvoiceMultiController extends Controller
             'due_amt' => '',
             'credit_note_amt' => '',
             'inv_status_id' => 'required',
-            'inv_submitted_date' => 'required'
+            'inv_submitted_date' => 'required',
         ]);
 
         $newInvoiceMulti = new InvoiceMulti([
@@ -329,7 +340,7 @@ class InvoiceMultiController extends Controller
             'inv_submitted_date' => $request->get('inv_submitted_date'),
             'due_amt' => $request->get('due_amt'),
             'credit_note_amt' => $request->get('credit_note_amt'),
-            'invoice_type_id' => $request->get('invoice_type_id')
+            'invoice_type_id' => $request->get('invoice_type_id'),
         ]);
 
         $newInvoiceMulti->save();
@@ -356,10 +367,9 @@ class InvoiceMultiController extends Controller
     //         ->select('invoice_multi.*','clientdetails.name','projects.project_name','clientdetails.client_id','salesdetails.*','debtor_company_det.*','inv_status.*','invoicedetids.*')
     //         ->where('invoice_multi.invoice_multi_id',$invoice_multi_id)
     //         ->get();
-    // 		return response()->json($InvoiceMulti);
+    //         return response()->json($InvoiceMulti);
 
     //     }
-
 
     public function show($invoice_multi_id)
     {
@@ -396,9 +406,8 @@ class InvoiceMultiController extends Controller
                 'tblcreditnote_multi.total_creditnote_amt'
             )
 
-
-            // ->select('invoice_multi.*', 'invoicedetids.*','salesdetails.sales_id','invoicedetids.taxable_amt', 'salesdetails.flat_no', 'salesdetails.wing', 'salesdetails.building_name', 'salesdetails.case_payout_percentage', 'salesdetails.consideration_value', 'clientdetails.name', 'debtor_company_det.cname', 'projects.project_name')
-            // ->select('invoice_multi.*','salesdetails.sales_id','invoicedetids.taxable_amt', 'salesdetails.flat_no', 'salesdetails.wing', 'salesdetails.building_name', 'salesdetails.case_payout_percentage', 'salesdetails.consideration_value', 'clientdetails.name', 'debtor_company_det.cname', 'projects.project_name')
+        // ->select('invoice_multi.*', 'invoicedetids.*','salesdetails.sales_id','invoicedetids.taxable_amt', 'salesdetails.flat_no', 'salesdetails.wing', 'salesdetails.building_name', 'salesdetails.case_payout_percentage', 'salesdetails.consideration_value', 'clientdetails.name', 'debtor_company_det.cname', 'projects.project_name')
+        // ->select('invoice_multi.*','salesdetails.sales_id','invoicedetids.taxable_amt', 'salesdetails.flat_no', 'salesdetails.wing', 'salesdetails.building_name', 'salesdetails.case_payout_percentage', 'salesdetails.consideration_value', 'clientdetails.name', 'debtor_company_det.cname', 'projects.project_name')
 
             ->leftjoin('tblcreditnote_multi', 'tblcreditnote_multi.invoice_num', '=', 'invoice_multi.invoice_num')
             ->leftjoin('invoicedetids', 'invoicedetids.invoice_multi_id', '=', 'invoice_multi.invoice_multi_id')
@@ -427,7 +436,7 @@ class InvoiceMultiController extends Controller
         //  return response()->json($InvoiceMulti);
         $InvoiceMulti = DB::table('invoice_multi')
             ->select('invoice_multi.*', 'invoicedetids.*', 'salesdetails.sales_id', 'invoicedetids.taxable_amt', 'salesdetails.flat_no', 'salesdetails.wing', 'salesdetails.building_name', 'salesdetails.case_payout_percentage', 'salesdetails.consideration_value', 'clientdetails.name', 'debtor_company_det.cname', 'projects.project_name')
-            // ->select('invoice_multi.*','salesdetails.sales_id','invoicedetids.taxable_amt', 'salesdetails.flat_no', 'salesdetails.wing', 'salesdetails.building_name', 'salesdetails.case_payout_percentage', 'salesdetails.consideration_value', 'clientdetails.name', 'debtor_company_det.cname', 'projects.project_name')
+        // ->select('invoice_multi.*','salesdetails.sales_id','invoicedetids.taxable_amt', 'salesdetails.flat_no', 'salesdetails.wing', 'salesdetails.building_name', 'salesdetails.case_payout_percentage', 'salesdetails.consideration_value', 'clientdetails.name', 'debtor_company_det.cname', 'projects.project_name')
             ->leftjoin('invoicedetids', 'invoicedetids.invoice_multi_id', '=', 'invoice_multi.invoice_multi_id')
             ->leftjoin('salesdetails', 'salesdetails.sales_id', '=', 'invoicedetids.sales_id')
             ->leftjoin('debtor_company_det', 'debtor_company_det.debtor_company_det_id', '=', 'invoicedetids.company_id')
@@ -437,7 +446,6 @@ class InvoiceMultiController extends Controller
             ->get();
         return response()->json($InvoiceMulti);
     }
-
 
     /**
      * Update the specified resource in storage.
@@ -507,7 +515,6 @@ class InvoiceMultiController extends Controller
         return response()->json($data1);
     }
 
-
     public function in_Maha(Request $request)
     {
         //dd($request->all());
@@ -554,11 +561,11 @@ class InvoiceMultiController extends Controller
         return response()->json($tdsrate);
     }
 
-    function pendinginvoice()
+    public function pendinginvoice()
     {
         $pendinginvoice = DB::table('invoice_multi')
             ->select('*')
-            //   ->where('inv_status_id','2')
+        //   ->where('inv_status_id','2')
             ->whereIn('inv_status_id', [2, 8])
             ->get();
 
@@ -572,7 +579,7 @@ class InvoiceMultiController extends Controller
             ->select(DB::raw('COUNT(inv_status_id ) as received'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date'), DB::raw('(COUNT(*)) as count'))
             ->where(DB::raw('YEAR(invoice_date)'), '=', DB::raw('YEAR(CURDATE())'))
             ->where('inv_status_id', '=', 1)
-            // ->orderBy(DB::raw('Month(invoice_date)'))
+        // ->orderBy(DB::raw('Month(invoice_date)'))
             ->groupBy(DB::raw('DATE_FORMAT(invoice_date,"%M-%Y")'))
             ->get();
         // return response()->json($invoData);
@@ -606,7 +613,7 @@ class InvoiceMultiController extends Controller
             ->select(DB::raw('COUNT(inv_status_id ) as pending'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date'), DB::raw('(COUNT(*)) as count'))
             ->where(DB::raw('YEAR(invoice_date)'), '=', DB::raw('YEAR(CURDATE())'))
             ->where('inv_status_id', '=', 2)
-            // ->orderBy(DB::raw('Month(invoice_date)'))
+        // ->orderBy(DB::raw('Month(invoice_date)'))
             ->groupBy(DB::raw('DATE_FORMAT(invoice_date,"%M-%Y")'))
             ->get();
         $dateOfData = array();
@@ -639,7 +646,7 @@ class InvoiceMultiController extends Controller
             ->select(DB::raw('COUNT(inv_status_id ) as partial'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date'), DB::raw('(COUNT(*)) as count'))
             ->where(DB::raw('YEAR(invoice_date)'), '=', DB::raw('YEAR(CURDATE())'))
             ->where('inv_status_id', '=', 8)
-            // ->orderBy(DB::raw('Month(invoice_date)'))
+        // ->orderBy(DB::raw('Month(invoice_date)'))
             ->groupBy(DB::raw('DATE_FORMAT(invoice_date,"%M-%Y")'))
             ->get();
         $dateOfData = array();
@@ -684,7 +691,7 @@ class InvoiceMultiController extends Controller
         $invoData = DB::table('invoice_multi')
             ->select(DB::raw('DISTINCT(DATE_FORMAT(invoice_date,"%M %Y")) as date'))
             ->where(DB::raw('YEAR(invoice_date)'), '=', DB::raw('YEAR(CURDATE())'))
-            //  ->orderBy(DB::raw('Month(invoice_date)'))
+        //  ->orderBy(DB::raw('Month(invoice_date)'))
             ->get();
         $dateOfData = array();
         foreach ($invoData as $key => $value) {
@@ -716,7 +723,7 @@ class InvoiceMultiController extends Controller
             ->select(DB::raw('Sum(received_amt) as received'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date'), DB::raw('(COUNT(*)) as count'))
             ->where(DB::raw('YEAR(invoice_date)'), '=', DB::raw('YEAR(CURDATE())'))
             ->where('inv_status_id', '=', 1)
-            // ->orderBy(DB::raw('Month(invoice_date)'))
+        // ->orderBy(DB::raw('Month(invoice_date)'))
             ->groupBy(DB::raw('DATE_FORMAT(invoice_date,"%M-%Y")'))
             ->get();
         $sumOfData = array();
@@ -747,7 +754,7 @@ class InvoiceMultiController extends Controller
             ->select(DB::raw('Sum(due_amt) as pending'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date'), DB::raw('(COUNT(*)) as count'))
             ->where(DB::raw('YEAR(invoice_date)'), '=', DB::raw('YEAR(CURDATE())'))
             ->where('inv_status_id', '=', 2)
-            // ->orderBy(DB::raw('Month(invoice_date)'))
+        // ->orderBy(DB::raw('Month(invoice_date)'))
             ->groupBy(DB::raw('DATE_FORMAT(invoice_date,"%M-%Y")'))
             ->get();
 
@@ -779,7 +786,7 @@ class InvoiceMultiController extends Controller
             ->select(DB::raw('Sum(received_amt) as partial_pending'), DB::raw('DATE_FORMAT(invoice_date,"%M-%Y") as date'), DB::raw('(COUNT(*)) as count'))
             ->where(DB::raw('YEAR(invoice_date)'), '=', DB::raw('YEAR(CURDATE())'))
             ->where('inv_status_id', '=', 8)
-            // ->orderBy(DB::raw('Month(invoice_date)'))
+        // ->orderBy(DB::raw('Month(invoice_date)'))
             ->groupBy(DB::raw('DATE_FORMAT(invoice_date,"%M-%Y")'))
             ->get();
 
@@ -811,7 +818,7 @@ class InvoiceMultiController extends Controller
         $invoData = DB::table('invoice_multi')
             ->select(DB::raw('DISTINCT(DATE_FORMAT(invoice_date,"%M %Y")) as date'))
             ->where(DB::raw('YEAR(invoice_date)'), '=', DB::raw('YEAR(CURDATE())'))
-            //  ->orderBy(DB::raw('Month(invoice_date)'))
+        //  ->orderBy(DB::raw('Month(invoice_date)'))
             ->get();
         $dateOfData = array();
         foreach ($invoData as $key => $value) {
@@ -840,7 +847,7 @@ class InvoiceMultiController extends Controller
     {
         $dateValue = explode('-', $invoice_date);
         $datelead = DB::table('invoice_multi')
-            // ->select(invoice_multi)
+        // ->select(invoice_multi)
             ->join('inv_status', 'inv_status.inv_status_id', '=', 'invoice_multi.inv_status_id')
             ->select('invoice_multi.*', 'inv_status.status')
             ->whereMonth('invoice_date', '=', $dateValue[1])
@@ -854,7 +861,6 @@ class InvoiceMultiController extends Controller
         $Disbursement = Disbursement::all();
         return response()->json($Disbursement);
     }
-
 
     public function getDisbursement1($client_id)
     {

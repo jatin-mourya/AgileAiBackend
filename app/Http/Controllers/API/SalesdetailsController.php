@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\API;
 
-//use DB   
-use Illuminate\Support\Facades\DB;
+//use DB
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Salesdetails;
 use App\Models\Leadsource;
+use App\Models\Salesdetails;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class SalesdetailsController extends Controller
@@ -24,11 +24,11 @@ class SalesdetailsController extends Controller
             ->leftjoin('projects', 'projects.project_id', '=', 'salesdetails.project_id')
             ->leftjoin('booking_status', 'booking_status.deal_status_id', '=', 'salesdetails.deal_status_id')
             ->leftjoin('leadsource', 'leadsource.leadsource_id', '=', 'salesdetails.leadsource_id')
-            // ->join('channelpartner','channelpartner.cp_id','=','salesdetails.cp_id')
+        // ->join('channelpartner','channelpartner.cp_id','=','salesdetails.cp_id')
             ->leftjoin('users', 'users.user_id', '=', 'salesdetails.sourcing_emp_id')
             ->leftjoin('teams', 'teams.team_id', '=', 'salesdetails.team_id')
-            // ->select('salesdetails.*','clientdetails.name','projects.project_name', 'booking_status.status','salesdetails.booking_date','users.firstname','users.middlename','users.lastname','teams.teamname')
-            // ->select('salesdetails.*','clientdetails.name','projects.project_name', 'booking_status.status', 'leadsource.leadsource','salesdetails.booking_date','channelpartner.cp_name','users.firstname','users.middlename','users.lastname','teams.teamname')
+        // ->select('salesdetails.*','clientdetails.name','projects.project_name', 'booking_status.status','salesdetails.booking_date','users.firstname','users.middlename','users.lastname','teams.teamname')
+        // ->select('salesdetails.*','clientdetails.name','projects.project_name', 'booking_status.status', 'leadsource.leadsource','salesdetails.booking_date','channelpartner.cp_name','users.firstname','users.middlename','users.lastname','teams.teamname')
             ->orderBy('salesdetails.updated_at', 'DESC')
             ->get();
         return response()->json($salesdetails);
@@ -80,7 +80,7 @@ class SalesdetailsController extends Controller
             'business_value' => $request->get('business_value'),
             'bv_add' => $request->get('bv_add'),
             'total_payout' => $request->get('total_payout'),
-            'received_amt' => $request->get('received_amt')
+            'received_amt' => $request->get('received_amt'),
 
         ]);
         return response()->json($newSalesdetails);
@@ -94,8 +94,6 @@ class SalesdetailsController extends Controller
      */
     public function store(Request $request)
     {
-
-
 
         $request->validate([
 
@@ -136,7 +134,7 @@ class SalesdetailsController extends Controller
             'shared_deals' => '',
             'bv_add' => '',
             'total_payout' => '',
-            'received_amt' => ''
+            'received_amt' => '',
         ]);
 
         $newSalesdetails = new Salesdetails([
@@ -178,15 +176,13 @@ class SalesdetailsController extends Controller
             'bv_add' => $request->get('bv_add'),
             'shared_deals' => $request->get('shared_deals'),
             'total_payout' => $request->get('total_payout'),
-            'received_amt' => $request->get('received_amt')
+            'received_amt' => $request->get('received_amt'),
         ]);
 
         $newSalesdetails->save();
 
         return response()->json($newSalesdetails);
     }
-
-
 
     /**
      * Display the specified resource.
@@ -203,7 +199,6 @@ class SalesdetailsController extends Controller
         return response()->json(["sale" => $salesdetails, "client" => $client]);
         // by jatin
     }
-
 
     // public function show(Request $request, $sales_id)
     // {
@@ -269,7 +264,6 @@ class SalesdetailsController extends Controller
     public function getSalesCount()
     {
 
-
         $leadsource = Leadsource::all();
         $leadsource = DB::table('leadsource')
             ->pluck('leadsource')
@@ -320,7 +314,7 @@ class SalesdetailsController extends Controller
         }
         return response()->json($count);
     }
-    // used in add or edit invoice 
+    // used in add or edit invoice
     public function getsales($client_id)
     {
         $sales = DB::table('salesdetails')
@@ -332,7 +326,7 @@ class SalesdetailsController extends Controller
             ->get();
         return response()->json($sales);
     }
-    // used in add or edit invoice 
+    // used in add or edit invoice
 
     public function getbookingid()
     {
@@ -378,7 +372,6 @@ class SalesdetailsController extends Controller
 
         return response()->json($datelead);
     }
-
 
     public function getdatevalue()
     {
@@ -455,4 +448,46 @@ class SalesdetailsController extends Controller
         }
         return response()->json($dateOfData1);
     }
+    // ########################  Function by jatin (starts here)  ######################## //
+    // ########################  Function by jatin (starts here)  ######################## //
+    public function getDashboardChart(Request $request)
+    {
+        $from_date = $request->input('from_date') ?? '';
+        $to_date = $request->input('to_date') ?? '';
+
+        $leadsource = Leadsource::all();
+        $leadsource = DB::table('leadsource')
+            ->pluck('leadsource')
+            ->toArray();
+        // return response()->json($leadsource);
+        foreach ($leadsource as $i => $item) {
+
+            $salesdetail = DB::table('salesdetails')
+                ->leftJoin('leadsource', 'leadsource.leadsource_id', 'salesdetails.leadsource_id')
+                ->select('leadsource.leadsource', DB::raw('count(leadsource.leadsource) as count'))
+                ->where('leadsource', $item)
+                ->groupBy('leadsource.leadsource');
+
+            if ($from_date) {
+                $salesdetail = $salesdetail->where('salesdetails.booking_date', '>', $from_date);
+            }
+            if ($to_date) {
+                $salesdetail = $salesdetail->where('salesdetails.booking_date', '<', $to_date);
+            }
+
+            $salesdetail = $salesdetail->first();
+
+            if ($salesdetail) {
+                $salesdetails[] = $salesdetail;
+            } else {
+                $salesdetails[] = [
+                    'leadsource' => $item,
+                    'count' => 0,
+                ];
+            }
+        }
+        return response()->json($salesdetails);
+    }
+    // ########################  Function by jatin (ends here)  ######################## //
+    // ########################  Function by jatin (ends here)  ######################## //
 }

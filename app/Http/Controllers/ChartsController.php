@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
-// import date package
 use Carbon\Carbon;
-
-use function PHPUnit\Framework\isNan;
-use function PHPUnit\Framework\isNull;
+// import date package
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ChartsController extends Controller
 {
@@ -89,8 +86,6 @@ class ChartsController extends Controller
         // all tables
         $tables = Schema::getConnection()->getDoctrineSchemaManager()->listTableNames();
 
-
-
         // Check if the table exists
         if (Schema::hasTable($tableName)) {
             $allT = [];
@@ -122,58 +117,49 @@ class ChartsController extends Controller
         $salesRelatedTables = ['salesdetails', 'clientdetails', 'teams', 'users', 'debtor_company_det', 'channelpartner', 'projects', 'subprojects', 'payout_status', 'leadsource', 'inv_status'];
         $invoiceRelatedTables = ['invoice_multi', 'invoicedetids'];
 
-        $moduleName = $request->input('moduleName');
-        $table_name_x = $request->input('table_name_x');
-        $table_name_y = $request->input('table_name_y');
-        $xaxis = $request->input('xaxis');
-        $yaxis = $request->input('yaxis');
-        $limit = $request->input('limit');
-        $filterByXvalue = $request->input('filterByXvalue');
-        $groupByX = $request->input('groupByX');
+        $moduleName = $request->input('moduleName') ?? '';
+        $table_name_x = $request->input('table_name_x') ?? '';
+        $table_name_y = $request->input('table_name_y') ?? '';
+        $xaxis = $request->input('xaxis') ?? '';
+        $yaxis = $request->input('yaxis') ?? '';
+        $limit = $request->input('limit') ?? '';
+        $filterByXvalue = $request->input('filterByXvalue') ?? '';
+        $groupByX = $request->input('groupByX') ?? '';
 
-        $daterange = $request->input('daterange');
-        $dateRangeArr = explode(',', $daterange);
+        $from_date = $request->input('from_date') ?? '';
+        $to_date = $request->input('to_date') ?? '';
 
-        $from_date = $dateRangeArr[0];
-        $to_date = $dateRangeArr[1];
-
-        if (empty($from_date) || isNull($from_date)) {
-            $from_date = '1970-01-01';
-        }
-        if (empty($to_date) || isNull($to_date)) {
-            $to_date = $now->format('Y-m-d');
-        }
-        // return response()->json($request);
-
-
-        if ($moduleName == 'sales') {
-            $mainTable = 'salesdetails';
-        } else if ($moduleName == 'invoice') {
-            $mainTable = 'invoice_multi';
-        }
         // for as col_name
         $yaxisAS = explode('.', $yaxis)[1];
 
-        $chartData = DB::table($mainTable)
-            ->join('clientdetails', 'clientdetails.client_id', 'salesdetails.client_id')
-            ->join('debtor_company_det', 'debtor_company_det.debtor_company_det_id', 'salesdetails.debtor_company_det_id')
-            ->join('teams', 'teams.team_id', 'salesdetails.team_id')
-            ->join('users', 'users.user_id', 'salesdetails.sourcing_emp_id')
-            ->join('users as u2', 'u2.user_id', 'salesdetails.closing_emp_id')
-            ->join('projects', 'projects.project_id', 'salesdetails.project_id')
-            ->join('subprojects', 'subprojects.subproject_id', 'salesdetails.subproject_id')
+        if ($moduleName == 'sales') {
+            $mainTable = 'salesdetails';
+            $chartData = DB::table($mainTable)
+                ->join('clientdetails', 'clientdetails.client_id', 'salesdetails.client_id')
+                ->join('debtor_company_det', 'debtor_company_det.debtor_company_det_id', 'salesdetails.debtor_company_det_id')
+                ->join('teams', 'teams.team_id', 'salesdetails.team_id')
+                ->join('users', 'users.user_id', 'salesdetails.sourcing_emp_id')
+                ->join('users as u2', 'u2.user_id', 'salesdetails.closing_emp_id')
+                ->join('projects', 'projects.project_id', 'salesdetails.project_id')
+                ->join('subprojects', 'subprojects.subproject_id', 'salesdetails.subproject_id')
             // ->join('channelpartner', 'channelpartner.cp_id', 'salesdetails.cp_id')
-            ->join('inv_status', 'inv_status.inv_status_id', 'salesdetails.inv_status')
-            ->join('leadsource', 'leadsource.leadsource_id', 'salesdetails.leadsource_id')
-            ->join('payout_status', 'payout_status.payout_status_id', 'salesdetails.payout_status_id')
-            // ->select($xaxis, DB::raw("sum($yaxis) as $yaxisAS"))
-            ->where('salesdetails.created_at', '>', $from_date)
-            ->where('salesdetails.created_at', '<', $to_date);
-        //     // ->where($xaxis, $filterByXvalue)
-        // ->groupBy($xaxis)
-        // ->limit($limit)
-        // ->get();
-        // DB::raw("CAST(SUM($yaxis) AS UNSIGNED) AS $yaxisAS")
+                ->join('inv_status', 'inv_status.inv_status_id', 'salesdetails.inv_status')
+                ->join('leadsource', 'leadsource.leadsource_id', 'salesdetails.leadsource_id')
+                ->join('payout_status', 'payout_status.payout_status_id', 'salesdetails.payout_status_id');
+        } else if ($moduleName == 'invoice') {
+            $mainTable = 'invoice_multi';
+            $chartData = DB::table($mainTable)
+                ->join('invoicedetids', 'invoicedetids.invoice_multi_id', 'invoice_multi.invoice_multi_id');
+
+        }
+
+        if ($from_date) {
+            $chartData = $chartData->where($mainTable . 'created_at', '>', $from_date);
+        }
+        if ($from_date) {$chartData = $chartData->where($mainTable . 'created_at', '<', $to_date);
+        }
+
+        // if groupBy value passed
         if ($groupByX) {
             $chartData = $chartData
                 ->select($xaxis, DB::raw("CAST(sum($yaxis)AS UNSIGNED) as $yaxisAS"))
@@ -182,37 +168,24 @@ class ChartsController extends Controller
             $chartData = $chartData
                 ->select($xaxis, $yaxis);
         }
+
         // if filter by x axis
         if ($filterByXvalue) {
             $chartData = $chartData
                 ->where($xaxis, $filterByXvalue);
         }
+
+        //  return sql query
+        $sqlQuery = $chartData
+            ->orderBy($xaxis)
+            ->limit($limit)->toSql();
+        // return data if found
         $chartData = $chartData
             ->orderBy($xaxis)
             ->limit($limit)->get();
-        // dd($chartData);
-        return response()->json(['data' => $chartData]);
-        // $sqlQuery = DB::table($mainTable)
-        //     ->join('clientdetails', 'clientdetails.client_id', 'salesdetails.client_id')
-        //     ->join('debtor_company_det', 'debtor_company_det.debtor_company_det_id', 'salesdetails.debtor_company_det_id')
-        //     ->join('teams', 'teams.team_id', 'salesdetails.team_id')
-        //     ->join('users as u1', 'u1.user_id', 'salesdetails.sourcing_emp_id')
-        //     ->join('users as u2', 'u2.user_id', 'salesdetails.closing_emp_id')
-        //     ->join('projects', 'projects.project_id', 'salesdetails.project_id')
-        //     ->join('subprojects', 'subprojects.subproject_id', 'salesdetails.subproject_id')
-        //     // ->join('channelpartner', 'channelpartner.cp_id', 'salesdetails.cp_id')
-        //     ->join('inv_status', 'inv_status.inv_status_id', 'salesdetails.inv_status')
-        //     ->join('leadsource', 'leadsource.leadsource_id', 'salesdetails.leadsource_id')
-        //     ->select($xaxis, DB::raw("sum($yaxis) as $yaxisAS"))
-        //     ->where('salesdetails.created_at', '>', $from_date)
-        //     ->where('salesdetails.created_at', '<', $to_date)
-        //     // ->where($xaxis, $filterByXvalue)
-        //     ->groupBy($xaxis)
-        //     ->limit($limit)
-        //     ->toSql();
-        // // dd($from_date, $to_date);
 
-        // return response()->json(['data' => $chartData, 'sqlQuery' => $sqlQuery]);
+        return response()->json(['data' => $chartData, 'sqlQuery' => $sqlQuery]);
+
     }
     public function getChart(Request $request)
     {
@@ -243,7 +216,7 @@ class ChartsController extends Controller
             ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
             ->where('created_at', '>', $from_date)
             ->where('created_at', '<', $to_date)
-            // ->where($xaxis, $filterByXvalue)
+        // ->where($xaxis, $filterByXvalue)
             ->groupBy($xaxis)
             ->limit($limit)
             ->get();
@@ -253,7 +226,7 @@ class ChartsController extends Controller
             ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
             ->where('created_at', '>', $from_date)
             ->where('created_at', '<', $to_date)
-            // ->where($xaxis, $filterByXvalue)
+        // ->where($xaxis, $filterByXvalue)
             ->groupBy($xaxis)
             ->limit($limit)
             ->toSql();
