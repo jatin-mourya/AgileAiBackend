@@ -31,7 +31,7 @@ class ChartsController extends Controller
 
         function loopthrough($modulesTable)
         {
-            $allCols = [];
+
             $allColsData = [];
             foreach ($modulesTable as $i => $table) {
 
@@ -40,33 +40,19 @@ class ChartsController extends Controller
                     $columns = Schema::getColumnListing($table);
 
                     foreach ($columns as $i => $col) {
-                        // $col = $table . '.' . $col;
-                        array_push($allColsData, ['id' => count($allColsData) + 1, 'table' => $table, 'col' => $col]);
-
-                        // $allColsData[$table][$i] = $col;
+                        array_push($allColsData, ["id" => count($allColsData) + 1, "table" => $table, "col" => $col]);
                     }
-                    // array_push($allCols, $columns2);
                 } else {
                     // Return error response if the table doesn't exist
                     return response()->json(['error' => "$table , Table not found "], 404);
                 }
             }
-            // return response()->json(['columns' => $allCols]);
             return $allColsData;
         }
         // Check if the table exists
         if (Schema::hasTable($tableName)) {
             // Get columns for the selected table
-
             $columns = loopthrough($tablesToLoop);
-            // $columns = Schema::getColumnListing($tableName);
-            // $columns2 = [];
-            // foreach ($columns as $i => $item) {
-            //     $item = $tableName . '.' . $item;
-            //     // array_push($columns2, [$i + 1 => $item]);
-            //     array_push($columns2, $item);
-            // }
-            // Return the columns as JSON response
             return response()->json($columns);
         } else {
             // Return error response if the table doesn't exist
@@ -114,9 +100,6 @@ class ChartsController extends Controller
     {
         $now = Carbon::now();
 
-        $salesRelatedTables = ['salesdetails', 'clientdetails', 'teams', 'users', 'debtor_company_det', 'channelpartner', 'projects', 'subprojects', 'payout_status', 'leadsource', 'inv_status'];
-        $invoiceRelatedTables = ['invoice_multi', 'invoicedetids'];
-
         $moduleName = $request->input('moduleName') ?? '';
         $table_name_x = $request->input('table_name_x') ?? '';
         $table_name_y = $request->input('table_name_y') ?? '';
@@ -154,9 +137,9 @@ class ChartsController extends Controller
         }
 
         if ($from_date) {
-            $chartData = $chartData->where($mainTable . 'created_at', '>', $from_date);
+            $chartData = $chartData->where($mainTable . '.' . 'created_at', '>', $from_date);
         }
-        if ($from_date) {$chartData = $chartData->where($mainTable . 'created_at', '<', $to_date);
+        if ($from_date) {$chartData = $chartData->where($mainTable . '.' . 'created_at', '<', $to_date);
         }
 
         // if groupBy value passed
@@ -177,12 +160,17 @@ class ChartsController extends Controller
 
         //  return sql query
         $sqlQuery = $chartData
-            ->orderBy($xaxis)
-            ->limit($limit)->toSql();
+            ->orderBy($xaxis);
+
+        if ($limit) {
+            $sqlQuery = $chartData
+                ->limit($limit);
+        }
+        //  return sql query
+        $sqlQuery = $chartData->toSql();
+
         // return data if found
-        $chartData = $chartData
-            ->orderBy($xaxis)
-            ->limit($limit)->get();
+        $chartData = $chartData->get();
 
         return response()->json(['data' => $chartData, 'sqlQuery' => $sqlQuery]);
 
@@ -238,12 +226,16 @@ class ChartsController extends Controller
     {
         // working 1
         $tables = Schema::getConnection()->getDoctrineSchemaManager()->listTableNames();
+        $allTables = [];
+        foreach ($tables as $i => $t) {
+            $allTables[] = ["id" => $i + 1, "table" => $t];
+        }
         // working 2
         // $tables = DB::select('SHOW TABLES');
         // working 3
         // $tables = Schema::getAllTables();
         // Return the list of tables as JSON response
-        return response()->json(['tables' => $tables]);
+        return response()->json($allTables);
     }
     public function getTableColumns($tableName)
     {
@@ -251,9 +243,12 @@ class ChartsController extends Controller
         if (Schema::hasTable($tableName)) {
             // Get columns for the selected table
             $columns = Schema::getColumnListing($tableName);
-
+            $allCols = [];
+            foreach ($columns as $i => $c) {
+                $allCols[] = ["id" => $i + 1, "col" => $c];
+            }
             // Return the columns as JSON response
-            return response()->json(['columns' => $columns]);
+            return response()->json($allCols);
         } else {
             // Return error response if the table doesn't exist
             return response()->json(['error' => 'Table not found'], 404);
