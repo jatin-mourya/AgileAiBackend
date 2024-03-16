@@ -100,12 +100,18 @@ class ChartsController extends Controller
     {
         $now = Carbon::now();
 
+        $pageNum = $request->input('pageNum') ?? 1;
+        $perPage = $request->input('perPage') ?? 0;
+        $skip = 0;
+        if ($pageNum > 1) {
+            $skip = ($pageNum - 1) * $perPage;
+        }
+
         $moduleName = $request->input('moduleName') ?? '';
         $table_name_x = $request->input('table_name_x') ?? '';
         $table_name_y = $request->input('table_name_y') ?? '';
         $xaxis = $request->input('xaxis') ?? '';
         $yaxis = $request->input('yaxis') ?? '';
-        $limit = $request->input('limit') ?? '';
         $filterByXvalue = $request->input('filterByXvalue') ?? '';
         $groupByX = $request->input('groupByX') ?? '';
 
@@ -113,6 +119,7 @@ class ChartsController extends Controller
         $to_date = $request->input('to_date') ?? '';
 
         // for as col_name
+        $xaxisAS = explode('.', $xaxis)[1];
         $yaxisAS = explode('.', $yaxis)[1];
 
         if ($moduleName == 'sales') {
@@ -136,10 +143,19 @@ class ChartsController extends Controller
 
         }
 
+        // from_date
         if ($from_date) {
             $chartData = $chartData->where($mainTable . '.' . 'created_at', '>', $from_date);
         }
-        if ($from_date) {$chartData = $chartData->where($mainTable . '.' . 'created_at', '<', $to_date);
+        // to_date
+        if ($to_date) {
+            $chartData = $chartData->where($mainTable . '.' . 'created_at', '<', $to_date);
+        }
+
+        // if filter by x axis value
+        if ($filterByXvalue) {
+            $chartData = $chartData
+                ->where($xaxis, $filterByXvalue);
         }
 
         // if groupBy value passed
@@ -149,30 +165,44 @@ class ChartsController extends Controller
                 ->groupBy($xaxis);
         } else {
             $chartData = $chartData
-                ->select($xaxis, $yaxis);
+                ->select($xaxis, DB::raw("CAST($yaxis AS UNSIGNED) as $yaxisAS"));
         }
 
-        // if filter by x axis
-        if ($filterByXvalue) {
+        // getting total pages available
+        $totalPages = 1;
+        if ($perPage > 0) {
+            $totalPages = ceil($chartData->get()->count() / $perPage);
+        }
+
+        // getting total count of bars
+        $totalBars = $chartData->get()->count();
+
+        // SKIP
+        if ($skip) {
             $chartData = $chartData
-                ->where($xaxis, $filterByXvalue);
+                ->skip($skip);
         }
 
-        //  return sql query
-        $sqlQuery = $chartData
+        // ORDER BY
+        $chartData = $chartData
             ->orderBy($xaxis);
 
-        if ($limit) {
-            $sqlQuery = $chartData
-                ->limit($limit);
+        // LIMIT
+        if ($perPage) {
+            $chartData = $chartData
+                ->limit($perPage);
         }
         //  return sql query
         $sqlQuery = $chartData->toSql();
 
         // return data if found
         $chartData = $chartData->get();
+        $chartData2 = [];
 
-        return response()->json(['data' => $chartData, 'sqlQuery' => $sqlQuery]);
+        foreach ($chartData as $i => &$item) {
+            $chartData2[] = [$xaxisAS => $item->$xaxisAS ?? 'undefined', $yaxisAS => $item->$yaxisAS ?? 0];
+        }
+        return response()->json(['totalPages' => $totalPages, 'totalBars' => $totalBars, 'data' => $chartData2, 'z' => $sqlQuery]);
 
     }
     public function getChart(Request $request)
@@ -182,7 +212,7 @@ class ChartsController extends Controller
         $table_name = $request->input('table_name');
         $xaxis = $request->input('xaxis');
         $yaxis = $request->input('yaxis');
-        $limit = $request->input('limit');
+        $perPage = $request->input('limit');
         $filterByXvalue = $request->input('filterByXvalue');
 
         $daterange = $request->input('daterange');
@@ -206,7 +236,7 @@ class ChartsController extends Controller
             ->where('created_at', '<', $to_date)
         // ->where($xaxis, $filterByXvalue)
             ->groupBy($xaxis)
-            ->limit($limit)
+            ->limit($perPage)
             ->get();
 
         // dd($chartData);
@@ -216,7 +246,7 @@ class ChartsController extends Controller
             ->where('created_at', '<', $to_date)
         // ->where($xaxis, $filterByXvalue)
             ->groupBy($xaxis)
-            ->limit($limit)
+            ->limit($perPage)
             ->toSql();
 
         return response()->json(['data' => $chartData, 'sqlQuery' => $sqlQuery]);
