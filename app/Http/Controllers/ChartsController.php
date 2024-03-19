@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\chartsModel;
 use Carbon\Carbon;
 // import date package
 use Illuminate\Http\Request;
@@ -108,15 +109,18 @@ class ChartsController extends Controller
         }
 
         $moduleName = $request->input('moduleName') ?? '';
-        $table_name_x = $request->input('table_name_x') ?? '';
-        $table_name_y = $request->input('table_name_y') ?? '';
+
         $xaxis = $request->input('xaxis') ?? '';
         $yaxis = $request->input('yaxis') ?? '';
-        $filterByXvalue = $request->input('filterByXvalue') ?? '';
-        $groupByX = $request->input('groupByX') ?? '';
+
+        $table_name_x = explode('.', $xaxis)[0] ?? '';
+        $table_name_y = explode('.', $yaxis)[0] ?? '';
 
         $from_date = $request->input('from_date') ?? '';
         $to_date = $request->input('to_date') ?? '';
+
+        $groupByX = $request->input('groupByX') ?? '';
+        $filterByXvalue = $request->input('filterByXvalue') ?? '';
 
         // for as col_name
         $xaxisAS = explode('.', $xaxis)[1];
@@ -136,6 +140,7 @@ class ChartsController extends Controller
                 ->join('inv_status', 'inv_status.inv_status_id', 'salesdetails.inv_status')
                 ->join('leadsource', 'leadsource.leadsource_id', 'salesdetails.leadsource_id')
                 ->join('payout_status', 'payout_status.payout_status_id', 'salesdetails.payout_status_id');
+
         } else if ($moduleName == 'invoice') {
             $mainTable = 'invoice_multi';
             $chartData = DB::table($mainTable)
@@ -158,15 +163,18 @@ class ChartsController extends Controller
                 ->where($xaxis, $filterByXvalue);
         }
 
+        $chartData = $chartData
+            ->select($xaxis, DB::raw("CAST(sum($yaxis)AS UNSIGNED) as $yaxisAS"))
+            ->groupBy($xaxis);
         // if groupBy value passed
-        if ($groupByX) {
-            $chartData = $chartData
-                ->select($xaxis, DB::raw("CAST(sum($yaxis)AS UNSIGNED) as $yaxisAS"))
-                ->groupBy($xaxis);
-        } else {
-            $chartData = $chartData
-                ->select($xaxis, DB::raw("CAST($yaxis AS UNSIGNED) as $yaxisAS"));
-        }
+        // if ($groupByX) {
+        //     $chartData = $chartData
+        //         ->select($xaxis, DB::raw("CAST(sum($yaxis)AS UNSIGNED) as $yaxisAS"))
+        //         ->groupBy($xaxis);
+        // } else {
+        //     $chartData = $chartData
+        //         ->select($xaxis, DB::raw("CAST($yaxis AS UNSIGNED) as $yaxisAS"));
+        // }
 
         // getting total pages available
         $totalPages = 1;
@@ -192,17 +200,23 @@ class ChartsController extends Controller
             $chartData = $chartData
                 ->limit($perPage);
         }
+
         //  return sql query
         $sqlQuery = $chartData->toSql();
 
         // return data if found
         $chartData = $chartData->get();
-        $chartData2 = [];
 
+        $chartData2 = [];
         foreach ($chartData as $i => &$item) {
             $chartData2[] = [$xaxisAS => $item->$xaxisAS ?? 'undefined', $yaxisAS => $item->$yaxisAS ?? 0];
         }
-        return response()->json(['totalPages' => $totalPages, 'totalBars' => $totalBars, 'data' => $chartData2, 'z' => $sqlQuery]);
+
+        return response()->json([
+            'totalPages' => $totalPages,
+            'totalBars' => $totalBars,
+            'data' => $chartData2,
+            'z' => $sqlQuery]);
 
     }
     public function getChart(Request $request)
@@ -287,4 +301,31 @@ class ChartsController extends Controller
     // ######################## charts API created by jatin (ends here) ######################## //
     // ######################## charts API created by jatin (ends here) ######################## //
 
+    public function index()
+    {
+        $charts = DB::table('charts')
+            ->get();
+        return response()->json($charts);
+    }
+
+    public function create(Request $request)
+    {
+        $createChart = new chartsModel([
+            'json_obj' => $request->get('json_obj'),
+        ]);
+        return response()->json($createChart);
+    }
+
+    public function store(Request $request)
+    {
+        $obj = $request->input('json_obj');
+        $stringg = json_encode($obj);
+        $createChart = new chartsModel([
+            'json_obj' => $stringg,
+        ]);
+
+        $createChart->save();
+
+        return response()->json($createChart);
+    }
 }
