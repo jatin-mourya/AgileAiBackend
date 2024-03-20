@@ -102,7 +102,7 @@ class ChartsController extends Controller
         $now = Carbon::now();
 
         $pageNum = $request->input('pageNum') ?? 1;
-        $perPage = $request->input('perPage') ?? 0;
+        $perPage = $request->input('perPage') ?? 10;
         $skip = 0;
         if ($pageNum > 1) {
             $skip = ($pageNum - 1) * $perPage;
