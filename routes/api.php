@@ -1075,4 +1075,4 @@ Route::post('/get-chart2', [ChartsController::class, 'getChart2'])->name('getCha
 // ########################  This Routes defined by jatin (ends here)  ######################## //
 // ########################  This Routes defined by jatin (ends here)  ######################## //
 
-Route::post('/get-dashboard-chart', [SalesdetailsController::class, 'getDashboardChart'])->name('getDashboardChart');
+Route::post('/get-dashboard-chart', [ChartsController::class, 'getDashboardChart'])->name('getDashboardChart');

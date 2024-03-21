@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\chartsModel;
+use App\Models\Leadsource;
 use Carbon\Carbon;
 // import date package
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ class ChartsController extends Controller
     // ######################## charts API created by jatin (starts here) ######################## //
     // ######################## charts API created by jatin (starts here) ######################## //
 
+    // get columns by module name
     public function getTableColumnsByModuleName($moduleName)
     {
         $tableName = '';
@@ -281,6 +283,7 @@ class ChartsController extends Controller
         // Return the list of tables as JSON response
         return response()->json($allTables);
     }
+    // Get all columns names from the table name
     public function getTableColumns($tableName)
     {
         // Check if the table exists
@@ -328,4 +331,46 @@ class ChartsController extends Controller
 
         return response()->json($createChart);
     }
+    // ########################  Function by jatin (starts here)  ######################## //
+    // ########################  Function by jatin (starts here)  ######################## //
+    public function getDashboardChart(Request $request)
+    {
+        $from_date = $request->input('from_date') ?? '';
+        $to_date = $request->input('to_date') ?? '';
+
+        $leadsource = Leadsource::all();
+        $leadsource = DB::table('leadsource')
+            ->pluck('leadsource')
+            ->toArray();
+        // return response()->json($leadsource);
+        foreach ($leadsource as $i => $item) {
+
+            $salesdetail = DB::table('salesdetails')
+                ->leftJoin('leadsource', 'leadsource.leadsource_id', 'salesdetails.leadsource_id')
+                ->select('leadsource.leadsource', DB::raw('count(leadsource.leadsource) as count'))
+                ->where('leadsource', $item)
+                ->groupBy('leadsource.leadsource');
+
+            if ($from_date) {
+                $salesdetail = $salesdetail->where('salesdetails.booking_date', '>', $from_date);
+            }
+            if ($to_date) {
+                $salesdetail = $salesdetail->where('salesdetails.booking_date', '<', $to_date);
+            }
+
+            $salesdetail = $salesdetail->first();
+
+            if ($salesdetail) {
+                $salesdetails[] = $salesdetail;
+            } else {
+                $salesdetails[] = [
+                    'leadsource' => $item,
+                    'count' => 0,
+                ];
+            }
+        }
+        return response()->json($salesdetails);
+    }
+    // ########################  Function by jatin (ends here)  ######################## //
+    // ########################  Function by jatin (ends here)  ######################## //
 }
