@@ -311,6 +311,18 @@ class ChartsController extends Controller
         return response()->json($charts);
     }
 
+    public function show($id)
+    {
+        // $chart = chartsModel::findOrFail($id);
+        $chart = DB::table('charts')->Where('id', $id)->first();
+        if ($chart) {
+            return response()->json($chart);
+        } else {
+            return response()->json(['message' => "Not Found"]);
+        }
+
+    }
+
     public function create(Request $request)
     {
         $createChart = new chartsModel([
