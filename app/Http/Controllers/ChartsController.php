@@ -215,6 +215,7 @@ class ChartsController extends Controller
         }
 
         return response()->json([
+            'currPage' => $pageNum,
             'totalPages' => $totalPages,
             'totalBars' => $totalBars,
             'data' => $chartData2,
