@@ -1069,8 +1069,10 @@ Route::get('/get-related-table/{tableName}', [ChartsController::class, 'getRelat
 // get all column list of a table
 Route::get('/get-table-columns/{tableName}', [ChartsController::class, 'getTableColumns'])->name('getTableColumns');
 Route::get('/get-table-columns-by-module/{moduleName}', [ChartsController::class, 'getTableColumnsByModuleName'])->name('getTableColumnsByModuleName');
-// get Chart
-Route::post('/get-chart', [ChartsController::class, 'getChart'])->name('getChart');
+// get Charts list for normal user
+Route::get('/get-charts', [ChartsController::class, 'getCharts'])->name('getCharts');
+Route::post('/enable-disable-chart', [ChartsController::class, 'enableDisableChart'])->name('enableDisableChart');
+Route::post('/delete-chart', [ChartsController::class, 'deleteChart'])->name('deleteChart');
 Route::post('/get-chart2', [ChartsController::class, 'getChart2'])->name('getChart2');
 // ########################  This Routes defined by jatin (ends here)  ######################## //
 // ########################  This Routes defined by jatin (ends here)  ######################## //

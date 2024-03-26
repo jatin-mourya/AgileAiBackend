@@ -15,6 +15,28 @@ class ChartsController extends Controller
     // ######################## charts API created by jatin (starts here) ######################## //
     // ######################## charts API created by jatin (starts here) ######################## //
 
+    // delete chart
+    public function enableDisableChart(Request $request)
+    {
+        $id = $request->input('id');
+        $bool = $request->input('is_enable');
+        if ($bool) {
+            $updateStatus = chartsModel::where('id', $id)->update(['is_enable' => 1]);
+        } else {
+            $updateStatus = chartsModel::where('id', $id)->update(['is_enable' => 0]);
+        }
+
+        // return response()->json($id);
+        return response()->json($updateStatus);
+    }
+    public function deleteChart(Request $request)
+    {
+        $id = $request->input('id');
+        $deleteChart = chartsModel::destroy($id);
+
+        // return response()->json($id);
+        return response()->json($deleteChart);
+    }
     // get columns by module name
     public function getTableColumnsByModuleName($moduleName)
     {
@@ -308,6 +330,14 @@ class ChartsController extends Controller
     public function index()
     {
         $charts = DB::table('charts')
+            ->get();
+        return response()->json($charts);
+    }
+
+    public function getCharts()
+    {
+        $charts = DB::table('charts')
+            ->where('is_enable', 1)
             ->get();
         return response()->json($charts);
     }

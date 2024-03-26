@@ -73,10 +73,11 @@ class InvoiceMultiController extends Controller
     {
         $data1 = DB::table('salesdetails')
             ->join('clientdetails', 'clientdetails.client_id', '=', 'salesdetails.client_id')
-            ->select('clientdetails.client_id', 'salesdetails.sales_id', 'clientdetails.name')
+            ->select('clientdetails.client_id', 'clientdetails.name', 'salesdetails.sales_id', 'clientdetails.name')
             ->where('salesdetails.debtor_company_det_id', $id)
             ->where('salesdetails.deal_status_id', '=', 1)
             ->whereIn('salesdetails.payout_status_id', [3, 4])
+            ->orderBy('clientdetails.name')
             ->get();
         return response()->json($data1);
     }
