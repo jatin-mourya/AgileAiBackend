@@ -244,52 +244,52 @@ class ChartsController extends Controller
             'z' => $sqlQuery]);
 
     }
-    public function getChart(Request $request)
-    {
-        $now = Carbon::now();
+    // public function getChart(Request $request)
+    // {
+    //     $now = Carbon::now();
 
-        $table_name = $request->input('table_name');
-        $xaxis = $request->input('xaxis');
-        $yaxis = $request->input('yaxis');
-        $perPage = $request->input('limit');
-        $filterByXvalue = $request->input('filterByXvalue');
+    //     $table_name = $request->input('table_name');
+    //     $xaxis = $request->input('xaxis');
+    //     $yaxis = $request->input('yaxis');
+    //     $perPage = $request->input('limit');
+    //     $filterByXvalue = $request->input('filterByXvalue');
 
-        $daterange = $request->input('daterange');
-        $dateRangeArr = explode(',', $daterange);
+    //     $daterange = $request->input('daterange');
+    //     $dateRangeArr = explode(',', $daterange);
 
-        $from_date = $dateRangeArr[0];
-        $to_date = $dateRangeArr[1];
+    //     $from_date = $dateRangeArr[0];
+    //     $to_date = $dateRangeArr[1];
 
-        if (empty($from_date)) {
-            $from_date = '1970-01-01';
-        }
-        if (empty($to_date)) {
-            $to_date = $now->format('Y-m-d');
-        }
+    //     if (empty($from_date)) {
+    //         $from_date = '1970-01-01';
+    //     }
+    //     if (empty($to_date)) {
+    //         $to_date = $now->format('Y-m-d');
+    //     }
 
-        // dd($from_date, $to_date);
+    //     // dd($from_date, $to_date);
 
-        $chartData = DB::table($table_name)
-            ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
-            ->where('created_at', '>', $from_date)
-            ->where('created_at', '<', $to_date)
-        // ->where($xaxis, $filterByXvalue)
-            ->groupBy($xaxis)
-            ->limit($perPage)
-            ->get();
+    //     $chartData = DB::table($table_name)
+    //         ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
+    //         ->where('created_at', '>', $from_date)
+    //         ->where('created_at', '<', $to_date)
+    //     // ->where($xaxis, $filterByXvalue)
+    //         ->groupBy($xaxis)
+    //         ->limit($perPage)
+    //         ->get();
 
-        // dd($chartData);
-        $sqlQuery = DB::table($table_name)
-            ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
-            ->where('created_at', '>', $from_date)
-            ->where('created_at', '<', $to_date)
-        // ->where($xaxis, $filterByXvalue)
-            ->groupBy($xaxis)
-            ->limit($perPage)
-            ->toSql();
+    //     // dd($chartData);
+    //     $sqlQuery = DB::table($table_name)
+    //         ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
+    //         ->where('created_at', '>', $from_date)
+    //         ->where('created_at', '<', $to_date)
+    //     // ->where($xaxis, $filterByXvalue)
+    //         ->groupBy($xaxis)
+    //         ->limit($perPage)
+    //         ->toSql();
 
-        return response()->json(['data' => $chartData, 'sqlQuery' => $sqlQuery]);
-    }
+    //     return response()->json(['data' => $chartData, 'sqlQuery' => $sqlQuery]);
+    // }
     // Get all table names from the database schema
     public function getTableList()
     {
@@ -342,6 +342,15 @@ class ChartsController extends Controller
         return response()->json($charts);
     }
 
+    public function getChart($id)
+    {
+        $charts = DB::table('charts')
+            ->where('id', $id)
+            ->where('is_enable', 1)
+            ->get();
+        return response()->json($charts);
+    }
+
     public function show($id)
     {
         // $chart = chartsModel::findOrFail($id);
@@ -354,25 +363,39 @@ class ChartsController extends Controller
 
     }
 
-    public function create(Request $request)
-    {
-        $createChart = new chartsModel([
-            'json_obj' => $request->get('json_obj'),
-        ]);
-        return response()->json($createChart);
-    }
+    // public function create(Request $request)
+    // {
+    //     $createChart = new chartsModel([
+    //         'json_obj' => $request->get('json_obj'),
+    //     ]);
+    //     return response()->json($createChart);
+    // }
 
     public function store(Request $request)
     {
         $obj = $request->input('json_obj');
         $stringg = json_encode($obj);
         $createChart = new chartsModel([
+            'is_enable' => 0,
             'json_obj' => $stringg,
         ]);
 
         $createChart->save();
 
         return response()->json($createChart);
+    }
+
+    public function updateChart(Request $request)
+    {
+        $obj = $request->input('json_obj');
+        $stringg = json_encode($obj);
+
+        $id = $request->input('id');
+
+        $updateChart = chartsModel::where('id', $id)->update(['json_obj' => $stringg]);
+
+        // return response()->json($request);
+        return response()->json($updateChart);
     }
     // ########################  Function by jatin (starts here)  ######################## //
     // ########################  Function by jatin (starts here)  ######################## //

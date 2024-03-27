@@ -1063,15 +1063,21 @@ Route::post('/update-invoice-detids', [InvoicedetidsController::class, 'updateIn
 
 Route::apiResource('charts', ChartsController::class);
 
+Route::post('/update-chart', [ChartsController::class, 'updateChart'])->name('updateChart');
 // get all tables list
 Route::get('/get-table-list', [ChartsController::class, 'getTableList'])->name('getTableList');
-Route::get('/get-related-table/{tableName}', [ChartsController::class, 'getRelatedTables'])->name('getRelatedTables');
+// Route::get('/get-related-table/{tableName}', [ChartsController::class, 'getRelatedTables'])->name('getRelatedTables');
 // get all column list of a table
 Route::get('/get-table-columns/{tableName}', [ChartsController::class, 'getTableColumns'])->name('getTableColumns');
+// get all column list by module name
 Route::get('/get-table-columns-by-module/{moduleName}', [ChartsController::class, 'getTableColumnsByModuleName'])->name('getTableColumnsByModuleName');
 // get Charts list for normal user
 Route::get('/get-charts', [ChartsController::class, 'getCharts'])->name('getCharts');
+// get single Chart for normal user
+Route::get('/get-chart/{id}', [ChartsController::class, 'getChart'])->name('getChart');
+// for admin
 Route::post('/enable-disable-chart', [ChartsController::class, 'enableDisableChart'])->name('enableDisableChart');
+// for admin
 Route::post('/delete-chart', [ChartsController::class, 'deleteChart'])->name('deleteChart');
 Route::post('/get-chart2', [ChartsController::class, 'getChart2'])->name('getChart2');
 // ########################  This Routes defined by jatin (ends here)  ######################## //
