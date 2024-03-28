@@ -15,7 +15,90 @@ class ChartsController extends Controller
     // ######################## charts API created by jatin (starts here) ######################## //
     // ######################## charts API created by jatin (starts here) ######################## //
 
-    // delete chart
+    // for admin
+    // get charts list
+    public function index()
+    {
+        $charts = DB::table('charts')
+            ->get();
+        return response()->json($charts);
+    }
+
+    // for admin
+    // get chart by id
+    public function show($id)
+    {
+        // $chart = chartsModel::findOrFail($id);
+        $chart = DB::table('charts')->Where('id', $id)->first();
+        if ($chart) {
+            return response()->json($chart);
+        } else {
+            return response()->json(['message' => "Not Found"]);
+        }
+
+    }
+
+    // for normal user
+    // get charts list
+    public function getCharts()
+    {
+        $charts = DB::table('charts')
+            ->where('is_enable', 1)
+            ->get();
+        return response()->json($charts);
+    }
+
+    // for normal user
+    // get chart By ID
+    public function getChart($id)
+    {
+        $charts = DB::table('charts')
+            ->where('id', $id)
+            ->where('is_enable', 1)
+            ->get();
+        return response()->json($charts);
+    }
+
+    // if post request creates chart in charts table
+    public function store(Request $request)
+    {
+        $obj = $request->input('json_obj');
+        $stringg = json_encode($obj);
+        $createChart = new chartsModel([
+            'is_enable' => 0,
+            'json_obj' => $stringg,
+        ]);
+
+        $createChart->save();
+
+        return response()->json($createChart);
+    }
+
+    // update chart
+    public function updateChart(Request $request)
+    {
+        $obj = $request->input('json_obj');
+        $stringg = json_encode($obj);
+
+        $id = $request->input('id');
+
+        $updateChart = chartsModel::where('id', $id)->update(['json_obj' => $stringg]);
+
+        // return response()->json($request);
+        return response()->json($updateChart);
+    }
+
+    // delete chart by Chart ID
+    public function deleteChart(Request $request)
+    {
+        $id = $request->input('id');
+        $deleteChart = chartsModel::destroy($id);
+
+        // return response()->json($id);
+        return response()->json($deleteChart);
+    }
+
+    // Enable / Disable Chart BY Chart ID
     public function enableDisableChart(Request $request)
     {
         $id = $request->input('id');
@@ -29,20 +112,49 @@ class ChartsController extends Controller
         // return response()->json($id);
         return response()->json($updateStatus);
     }
-    public function deleteChart(Request $request)
-    {
-        $id = $request->input('id');
-        $deleteChart = chartsModel::destroy($id);
 
-        // return response()->json($id);
-        return response()->json($deleteChart);
+    // Get all table names from the database schema
+    public function getTableList()
+    {
+        // working 1
+        $tables = Schema::getConnection()->getDoctrineSchemaManager()->listTableNames();
+        $allTables = [];
+        foreach ($tables as $i => $t) {
+            $allTables[] = ["id" => $i + 1, "table" => $t];
+        }
+        // working 2
+        // $tables = DB::select('SHOW TABLES');
+        // working 3
+        // $tables = Schema::getAllTables();
+        // Return the list of tables as JSON response
+        return response()->json($allTables);
     }
-    // get columns by module name
+
+    // Get all columns names from the table name
+    public function getTableColumns($tableName)
+    {
+        // Check if the table exists
+        if (Schema::hasTable($tableName)) {
+            // Get columns for the selected table
+            $columns = Schema::getColumnListing($tableName);
+            $allCols = [];
+            foreach ($columns as $i => $c) {
+                $allCols[] = ["id" => $i + 1, "col" => $c];
+            }
+            // Return the columns as JSON response
+            return response()->json($allCols);
+        } else {
+            // Return error response if the table doesn't exist
+            return response()->json(['error' => 'Table not found'], 404);
+        }
+    }
+
+    // get column_name list by module name
     public function getTableColumnsByModuleName($moduleName)
     {
         $tableName = '';
         $tablesToLoop = [];
-        $salesRelatedTables = ['salesdetails', 'clientdetails', 'teams', 'users', 'debtor_company_det', 'channelpartner', 'projects', 'subprojects', 'payout_status', 'leadsource', 'inv_status'];
+        $salesRelatedTables = ['salesdetails', 'clientdetails', 'teams', 'users', 'debtor_company_det', 'channelpartner', 'projects', 'builders_group', 'subprojects', 'payout_status', 'leadsource', 'inv_status'];
         $invoiceRelatedTables = ['invoice_multi', 'invoicedetids'];
 
         if ($moduleName == 'sales') {
@@ -63,8 +175,12 @@ class ChartsController extends Controller
                 // Check if the table exists
                 if (Schema::hasTable($table)) {
                     $columns = Schema::getColumnListing($table);
-
-                    foreach ($columns as $i => $col) {
+                    $filteredColumns = array_filter($columns, function ($column) {
+                        return strpos($column, '_id') === false &&
+                            $column !== 'created_at' &&
+                            $column !== 'updated_at';
+                    });
+                    foreach ($filteredColumns as $i => $col) {
                         array_push($allColsData, ["id" => count($allColsData) + 1, "table" => $table, "col" => $col]);
                     }
                 } else {
@@ -84,44 +200,8 @@ class ChartsController extends Controller
             return response()->json(['error' => "$tableName , Table not found "], 404);
         }
     }
-    public function getRelatedTables($tableName)
-    {
-        // $foreignKeys = Schema::getConnection()->getDoctrineSchemaManager()->listTableForeignKeys($tableName);
-        // $relatedTables = [];
-        // foreach ($foreignKeys as $constraint) {
-        //     // Extract the referenced table name
-        //     $relatedTables[] = $constraint->getLocalColumns()[0];
-        // }
-        // return response()->json($relatedTables);
 
-        // all tables
-        $tables = Schema::getConnection()->getDoctrineSchemaManager()->listTableNames();
-
-        // Check if the table exists
-        if (Schema::hasTable($tableName)) {
-            $allT = [];
-            // foreach ($tables as $table) {
-            // Get the foreign keys that reference the specified table
-            // $foreignKeys = DB::select("SELECT TABLE_NAME
-            //                             FROM information_schema.key_column_usage
-            //                             WHERE referenced_table_name = $tableName
-            //                             AND table_schema = DATABASE()");
-            // // Extract the table names from the result
-            // $relatedTables = array_map(function ($key) {
-            //     return $key->TABLE_NAME;
-            // }, $foreignKeys);
-            // array_push($allT, $relatedTables);
-            // }
-
-            // Return the list of related tables as JSON response
-            // return response()->json(['related_tables' => $relatedTables]);
-
-        } else {
-            // Return error response if the table doesn't exist
-            return response()->json(['error' => 'Table not found'], 404);
-        }
-    }
-    public function getChart2(Request $request)
+    public function getChartData(Request $request)
     {
         $now = Carbon::now();
 
@@ -159,6 +239,7 @@ class ChartsController extends Controller
                 ->join('users', 'users.user_id', 'salesdetails.sourcing_emp_id')
                 ->join('users as u2', 'u2.user_id', 'salesdetails.closing_emp_id')
                 ->join('projects', 'projects.project_id', 'salesdetails.project_id')
+                ->join('builders_group', 'projects.builder_group_id', 'builders_group.builder_group_id')
                 ->join('subprojects', 'subprojects.subproject_id', 'salesdetails.subproject_id')
             // ->join('channelpartner', 'channelpartner.cp_id', 'salesdetails.cp_id')
                 ->join('inv_status', 'inv_status.inv_status_id', 'salesdetails.inv_status')
@@ -244,81 +325,87 @@ class ChartsController extends Controller
             'z' => $sqlQuery]);
 
     }
-    // public function getChart(Request $request)
-    // {
-    //     $now = Carbon::now();
 
-    //     $table_name = $request->input('table_name');
-    //     $xaxis = $request->input('xaxis');
-    //     $yaxis = $request->input('yaxis');
-    //     $perPage = $request->input('limit');
-    //     $filterByXvalue = $request->input('filterByXvalue');
-
-    //     $daterange = $request->input('daterange');
-    //     $dateRangeArr = explode(',', $daterange);
-
-    //     $from_date = $dateRangeArr[0];
-    //     $to_date = $dateRangeArr[1];
-
-    //     if (empty($from_date)) {
-    //         $from_date = '1970-01-01';
-    //     }
-    //     if (empty($to_date)) {
-    //         $to_date = $now->format('Y-m-d');
-    //     }
-
-    //     // dd($from_date, $to_date);
-
-    //     $chartData = DB::table($table_name)
-    //         ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
-    //         ->where('created_at', '>', $from_date)
-    //         ->where('created_at', '<', $to_date)
-    //     // ->where($xaxis, $filterByXvalue)
-    //         ->groupBy($xaxis)
-    //         ->limit($perPage)
-    //         ->get();
-
-    //     // dd($chartData);
-    //     $sqlQuery = DB::table($table_name)
-    //         ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
-    //         ->where('created_at', '>', $from_date)
-    //         ->where('created_at', '<', $to_date)
-    //     // ->where($xaxis, $filterByXvalue)
-    //         ->groupBy($xaxis)
-    //         ->limit($perPage)
-    //         ->toSql();
-
-    //     return response()->json(['data' => $chartData, 'sqlQuery' => $sqlQuery]);
-    // }
-    // Get all table names from the database schema
-    public function getTableList()
+    // get Chart Data By Table Name
+    public function getChartData2(Request $request)
     {
-        // working 1
-        $tables = Schema::getConnection()->getDoctrineSchemaManager()->listTableNames();
-        $allTables = [];
-        foreach ($tables as $i => $t) {
-            $allTables[] = ["id" => $i + 1, "table" => $t];
+        $now = Carbon::now();
+
+        $table_name = $request->input('table_name');
+        $xaxis = $request->input('xaxis');
+        $yaxis = $request->input('yaxis');
+        $perPage = $request->input('limit');
+        $filterByXvalue = $request->input('filterByXvalue');
+
+        $daterange = $request->input('daterange');
+        $dateRangeArr = explode(',', $daterange);
+
+        $from_date = $dateRangeArr[0];
+        $to_date = $dateRangeArr[1];
+
+        if (empty($from_date)) {
+            $from_date = '1970-01-01';
         }
-        // working 2
-        // $tables = DB::select('SHOW TABLES');
-        // working 3
-        // $tables = Schema::getAllTables();
-        // Return the list of tables as JSON response
-        return response()->json($allTables);
+        if (empty($to_date)) {
+            $to_date = $now->format('Y-m-d');
+        }
+
+        // dd($from_date, $to_date);
+
+        $chartData = DB::table($table_name)
+            ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
+            ->where('created_at', '>', $from_date)
+            ->where('created_at', '<', $to_date)
+        // ->where($xaxis, $filterByXvalue)
+            ->groupBy($xaxis)
+            ->limit($perPage)
+            ->get();
+
+        // dd($chartData);
+        $sqlQuery = DB::table($table_name)
+            ->select($xaxis, DB::raw("sum($yaxis) as $yaxis"))
+            ->where('created_at', '>', $from_date)
+            ->where('created_at', '<', $to_date)
+        // ->where($xaxis, $filterByXvalue)
+            ->groupBy($xaxis)
+            ->limit($perPage)
+            ->toSql();
+
+        return response()->json(['data' => $chartData, 'sqlQuery' => $sqlQuery]);
     }
-    // Get all columns names from the table name
-    public function getTableColumns($tableName)
+
+    public function getRelatedTables($tableName)
     {
+        // $foreignKeys = Schema::getConnection()->getDoctrineSchemaManager()->listTableForeignKeys($tableName);
+        // $relatedTables = [];
+        // foreach ($foreignKeys as $constraint) {
+        //     // Extract the referenced table name
+        //     $relatedTables[] = $constraint->getLocalColumns()[0];
+        // }
+        // return response()->json($relatedTables);
+
+        // all tables
+        $tables = Schema::getConnection()->getDoctrineSchemaManager()->listTableNames();
+
         // Check if the table exists
         if (Schema::hasTable($tableName)) {
-            // Get columns for the selected table
-            $columns = Schema::getColumnListing($tableName);
-            $allCols = [];
-            foreach ($columns as $i => $c) {
-                $allCols[] = ["id" => $i + 1, "col" => $c];
-            }
-            // Return the columns as JSON response
-            return response()->json($allCols);
+            $allT = [];
+            // foreach ($tables as $table) {
+            // Get the foreign keys that reference the specified table
+            // $foreignKeys = DB::select("SELECT TABLE_NAME
+            //                             FROM information_schema.key_column_usage
+            //                             WHERE referenced_table_name = $tableName
+            //                             AND table_schema = DATABASE()");
+            // // Extract the table names from the result
+            // $relatedTables = array_map(function ($key) {
+            //     return $key->TABLE_NAME;
+            // }, $foreignKeys);
+            // array_push($allT, $relatedTables);
+            // }
+
+            // Return the list of related tables as JSON response
+            // return response()->json(['related_tables' => $relatedTables]);
+
         } else {
             // Return error response if the table doesn't exist
             return response()->json(['error' => 'Table not found'], 404);
@@ -327,78 +414,8 @@ class ChartsController extends Controller
     // ######################## charts API created by jatin (ends here) ######################## //
     // ######################## charts API created by jatin (ends here) ######################## //
 
-    public function index()
-    {
-        $charts = DB::table('charts')
-            ->get();
-        return response()->json($charts);
-    }
-
-    public function getCharts()
-    {
-        $charts = DB::table('charts')
-            ->where('is_enable', 1)
-            ->get();
-        return response()->json($charts);
-    }
-
-    public function getChart($id)
-    {
-        $charts = DB::table('charts')
-            ->where('id', $id)
-            ->where('is_enable', 1)
-            ->get();
-        return response()->json($charts);
-    }
-
-    public function show($id)
-    {
-        // $chart = chartsModel::findOrFail($id);
-        $chart = DB::table('charts')->Where('id', $id)->first();
-        if ($chart) {
-            return response()->json($chart);
-        } else {
-            return response()->json(['message' => "Not Found"]);
-        }
-
-    }
-
-    // public function create(Request $request)
-    // {
-    //     $createChart = new chartsModel([
-    //         'json_obj' => $request->get('json_obj'),
-    //     ]);
-    //     return response()->json($createChart);
-    // }
-
-    public function store(Request $request)
-    {
-        $obj = $request->input('json_obj');
-        $stringg = json_encode($obj);
-        $createChart = new chartsModel([
-            'is_enable' => 0,
-            'json_obj' => $stringg,
-        ]);
-
-        $createChart->save();
-
-        return response()->json($createChart);
-    }
-
-    public function updateChart(Request $request)
-    {
-        $obj = $request->input('json_obj');
-        $stringg = json_encode($obj);
-
-        $id = $request->input('id');
-
-        $updateChart = chartsModel::where('id', $id)->update(['json_obj' => $stringg]);
-
-        // return response()->json($request);
-        return response()->json($updateChart);
-    }
-    // ########################  Function by jatin (starts here)  ######################## //
-    // ########################  Function by jatin (starts here)  ######################## //
+    // ########################  GET Dashboard Chart Data by jatin (starts here)  ######################## //
+    // ########################  GET Dashboard Chart Data by jatin (starts here)  ######################## //
     public function getDashboardChart(Request $request)
     {
         $from_date = $request->input('from_date') ?? '';
@@ -437,6 +454,6 @@ class ChartsController extends Controller
         }
         return response()->json($salesdetails);
     }
-    // ########################  Function by jatin (ends here)  ######################## //
-    // ########################  Function by jatin (ends here)  ######################## //
+    // ########################  GET Dashboard Chart Data by jatin (ends here)  ######################## //
+    // ########################  GET Dashboard Chart Data by jatin (ends here)  ######################## //
 }

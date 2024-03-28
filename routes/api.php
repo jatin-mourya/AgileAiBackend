@@ -1079,7 +1079,7 @@ Route::get('/get-chart/{id}', [ChartsController::class, 'getChart'])->name('getC
 Route::post('/enable-disable-chart', [ChartsController::class, 'enableDisableChart'])->name('enableDisableChart');
 // for admin
 Route::post('/delete-chart', [ChartsController::class, 'deleteChart'])->name('deleteChart');
-Route::post('/get-chart2', [ChartsController::class, 'getChart2'])->name('getChart2');
+Route::post('/get-chart2', [ChartsController::class, 'getChartData'])->name('getChartData');
 // ########################  This Routes defined by jatin (ends here)  ######################## //
 // ########################  This Routes defined by jatin (ends here)  ######################## //
 
